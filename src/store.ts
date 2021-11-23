@@ -79,7 +79,7 @@ export default class NinjaStore {
         side, reduceOnly: false, quantity, symbol,
       });
 
-      void jumpSound.play();
+      if (this.soundsOn) void jumpSound.play();
       this.isBouncedOrderEnabled = false;
     }
   };
