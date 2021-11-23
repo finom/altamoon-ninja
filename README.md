@@ -1,5 +1,6 @@
 # altamoon-ninja
-Half-automated experimental strategies for Altamoon
+
+> Half-automated experimental strategies for Altamoon
 
 There is only one feature by the time being. It's so-called "bounced order".
 
