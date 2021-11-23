@@ -51,7 +51,7 @@ export default class NinjaStore {
       symbol: this.#store.persistent.symbol,
       interval: this.candlesInterval,
       callback: this.#handle,
-      limit: 4,
+      limit: 99,
       firstTickFromCache: false,
     });
   };
