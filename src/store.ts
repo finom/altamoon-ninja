@@ -72,7 +72,9 @@ export default class NinjaStore {
       symbol, price, size,
     });
 
-    if ((side === 'BUY' && lastCandle.open < lastCandle.close) || (side === 'SELL' && lastCandle.open > lastCandle.close)) {
+    const { direction } = lastCandle;
+
+    if ((side === 'BUY' && direction === 'UP') || (side === 'SELL' && direction === 'DOWN')) {
       // eslint-disable-next-line no-console
       console.info('BOUNCED ORDER TRIGGERED', lastCandle);
       void this.#store.trading.marketOrder({
