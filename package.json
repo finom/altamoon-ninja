@@ -1,25 +1,23 @@
 {
-  "name": "altamoon-hello-world-react",
-  "version": "0.3.14",
-  "description": "Hello world example plugin for Altamoon made with React, Webpack and TypeScript",
+  "name": "altamoon-ninja",
+  "version": "0.0.0",
+  "description": "Half-automated experimental strategies for Altamoon",
   "main": "dist/bundle.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode=production",
-    "start": "webpack serve --mode=development --hot --port=7070"
+    "start": "webpack serve --mode=development --hot --port=7070",
+    "lint-pure": "cross-env NODE_ENV=development eslint ./src --ext .ts,.tsx",
+    "lint": "npm run lint-pure -- --cache --fix",
+    "test": "npm run lint-pure && npx tsc --noemit",
+    "upgrade": "npx npm-check-updates -u -x eslint-config-airbnb-typescript && npm i",
+    "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
+    "minor": "npm t && npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
   "author": {
-    "name": "Letiliel",
-    "email": "dev@xod.me",
-    "url": "https://github.com/Letiliel"
+    "name": "Andrey Gubanov",
+    "email": "andrey@gubanov.eu",
+    "url": "https://opensource.gubanov.eu/"
   },
-  "contributors": [
-    {
-      "name": "Andrey Gubanov",
-      "email": "andrey@gubanov.eu",
-      "url": "https://opensource.gubanov.eu/"
-    }
-  ],
   "license": "AGPL-3.0-or-later",
   "babel": {
     "presets": [
@@ -39,16 +37,28 @@
     "@babel/preset-typescript": "^7.16.0",
     "@types/react": "^17.0.35",
     "@types/react-dom": "^17.0.11",
+    "@types/styled-components": "^5.1.15",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
     "babel-loader": "^8.2.3",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb": "^19.0.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "expect.js": "^0.3.1",
     "typescript": "^4.5.2",
     "webpack": "^5.64.2",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.5.0"
   },
   "dependencies": {
+    "altamoon-binance-api": "^0.0.105",
     "altamoon-types": "^0.0.101",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-hot-loader": "^4.13.0"
+    "react-hot-loader": "^4.13.0",
+    "reactstrap": "^9.0.1",
+    "styled-components": "^5.3.3",
+    "use-change": "^1.0.2"
   }
 }
