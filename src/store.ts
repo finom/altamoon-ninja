@@ -17,6 +17,8 @@ export default class NinjaStore {
 
   public bouncedOrderValueStr = '';
 
+  public bouncedOrderReduceOnly = false;
+
   public candlesInterval: api.CandlestickChartInterval = '3m';
 
   public candles: api.FuturesChartCandle[] = [];
@@ -59,7 +61,9 @@ export default class NinjaStore {
     const lastCandle = candles[candles.length - 1];
     const { symbol } = this.#store.persistent;
 
-    const { bouncedOrderSide: side, isBouncedOrderEnabled: isEnabled } = this;
+    const {
+      bouncedOrderReduceOnly: reduceOnly, bouncedOrderSide: side, isBouncedOrderEnabled: isEnabled,
+    } = this;
     const price = this.#store.market.currentSymbolLastPrice;
 
     const size = this.#store.trading.calculateSizeFromString(
@@ -78,7 +82,7 @@ export default class NinjaStore {
       // eslint-disable-next-line no-console
       console.info('BOUNCED ORDER TRIGGERED', lastCandle);
       void this.#store.trading.marketOrder({
-        side, reduceOnly: false, quantity, symbol,
+        side, reduceOnly, quantity, symbol,
       });
 
       if (this.soundsOn) void jumpSound.play();

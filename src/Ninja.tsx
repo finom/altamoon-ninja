@@ -44,6 +44,7 @@ const Ninja = ({
   const [bouncedOrderSide, setBouncedOrderSide] = useChange(NINJA, 'bouncedOrderSide');
   const [bouncedOrderValueStr, setBouncedOrderValueStr] = useChange(NINJA, 'bouncedOrderValueStr');
   const [interval, setChartInterval] = useChange(NINJA, 'candlesInterval');
+  const [bouncedOrderReduceOnly, setBouncedOrderReduceOnly] = useChange(NINJA, 'bouncedOrderReduceOnly');
   const [soundsOn, setSoundsOn] = useChange(NINJA, 'soundsOn');
   const [settingsSoundsOn, setSettingsSoundsOn] = useState<boolean>(soundsOn);
 
@@ -94,9 +95,22 @@ const Ninja = ({
               </IntervalItem>
             ))}
           </Intervals>
+          <div className="form-check form-check-inline">
+            <label className="form-check-label">
+              <Input
+                type="checkbox"
+                checked={bouncedOrderReduceOnly}
+                onChange={({ target }) => setBouncedOrderReduceOnly(target.checked)}
+              />
+              {' '}
+              Reduce-only
+            </label>
+          </div>
+          <div className="mt-2">
+            <label className="mb-1">Size</label>
+            <Input placeholder="Value" value={bouncedOrderValueStr} onChange={({ target }) => setBouncedOrderValueStr(target.value)} />
+          </div>
 
-          <label className="mb-1">Size</label>
-          <Input placeholder="Value" value={bouncedOrderValueStr} onChange={({ target }) => setBouncedOrderValueStr(target.value)} />
         </Col>
         <Col xs={12} />
       </Row>
