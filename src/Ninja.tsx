@@ -61,17 +61,19 @@ const Ninja = ({
       ), settingsElement)}
       <Row>
         <Col>
-          <label className="mb-3">
-            <Input
-              type="checkbox"
-              checked={isBouncedOrderEnabled}
-              onChange={({ target }) => setIsBouncedOrderEnabled(target.checked)}
-            />
-            {' '}
-            <EnabledLabel enabled={isBouncedOrderEnabled}>
-              Bounced order
-            </EnabledLabel>
-          </label>
+          <div className="form-check form-check-inline mb-3">
+            <label>
+              <Input
+                type="checkbox"
+                checked={isBouncedOrderEnabled}
+                onChange={({ target }) => setIsBouncedOrderEnabled(target.checked)}
+              />
+              {' '}
+              <EnabledLabel enabled={isBouncedOrderEnabled}>
+                Bounced order
+              </EnabledLabel>
+            </label>
+          </div>
           <Toggle
             id="ninja_toggle"
             checkedLabel="Buy"
