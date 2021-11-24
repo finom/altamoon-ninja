@@ -118,7 +118,7 @@ export default class NinjaStore {
     const {
       symbol, side, reduceOnly, valueStr,
     } = bouncingOrder;
-    const price = this.#store.market.currentSymbolLastPrice;
+    const price = lastCandle.close;
     const size = this.#store.trading.calculateSizeFromString(
       symbol, valueStr,
     );
