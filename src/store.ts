@@ -1,12 +1,13 @@
 import * as api from 'altamoon-binance-api';
 import { RootStore } from 'altamoon-types';
 import { listenChange } from 'use-change';
+import { without } from 'lodash';
 
 // https://themushroomkingdom.net/media/smb/wav
 const jumpSound = new Audio('https://themushroomkingdom.net/sounds/wav/smb/smb_bump.wav');
 
 function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
-  const storageValue = localStorage.getItem(`phlegmatic_${key}`);
+  const storageValue = localStorage.getItem(`ninja_${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
 }
 
@@ -25,6 +26,8 @@ export default class NinjaStore {
 
   public soundsOn = getPersistentStorageValue<NinjaStore, boolean>('soundsOn', false);
 
+  public lastUsedSymbols = getPersistentStorageValue<NinjaStore, string[]>('lastUsedSymbols', []);
+
   #store: RootStore;
 
   #chartUnsubscribe?: () => void;
@@ -32,11 +35,11 @@ export default class NinjaStore {
   constructor(store: RootStore) {
     this.#store = store;
 
-    const keysToListen: (keyof NinjaStore)[] = ['soundsOn'];
+    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'lastUsedSymbols'];
 
     keysToListen.forEach((key) => {
       listenChange(this, key, (value: unknown) => {
-        localStorage.setItem(`phlegmatic_${key}`, JSON.stringify(value));
+        localStorage.setItem(`ninja_${key}`, JSON.stringify(value));
       });
     });
 
@@ -46,6 +49,9 @@ export default class NinjaStore {
   }
 
   #onSymbolChange = (): void => {
+    const { symbol } = this.#store.persistent;
+    const lastUsed = [symbol].concat(without(this.lastUsedSymbols, symbol)).slice(0, 10);
+    this.lastUsedSymbols = lastUsed;
     this.#chartUnsubscribe?.();
     this.#chartUnsubscribe = api.futuresChartSubscribe({
       symbol: this.#store.persistent.symbol,
