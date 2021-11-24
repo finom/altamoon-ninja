@@ -10,7 +10,7 @@ import useChange, { useSet, useSilent } from 'use-change';
 import styled from 'styled-components';
 import { RootStore } from 'altamoon-types';
 import { createPortal } from 'react-dom';
-import { Link as LinkIcon, Link45deg, Trash } from 'react-bootstrap-icons';
+import { Link45deg, Trash } from 'react-bootstrap-icons';
 import Toggle from './components/Toggle';
 import { BouncingOrder, NINJA } from './store';
 import Settings from './Settings';

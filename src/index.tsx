@@ -20,7 +20,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const lastUsedSymbolsWidget = store.customization.createWidget({
     id: 'altamoon_ninja_last_used',
     hasSettings: false,
-    title: 'Last used symbols' ,
+    title: 'Last used symbols',
     currentScript,
     layout: { h: 3, w: 4, minH: 1 },
   });

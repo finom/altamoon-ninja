@@ -129,9 +129,9 @@ export default class NinjaStore {
       symbol, price, size,
     });
 
-    const { direction, symbol: sym, interval } = lastCandle;
+    const { direction } = lastCandle;
 
-    console.log('direction', sym, interval, direction);
+    // console.log('lastCandle', lastCandle);
 
     if ((side === 'BUY' && direction === 'UP') || (side === 'SELL' && direction === 'DOWN')) {
       // eslint-disable-next-line no-console
