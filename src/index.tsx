@@ -2,7 +2,7 @@ import * as t from 'altamoon-types';
 import React from 'react';
 import { Provider } from 'use-change';
 import { render } from 'react-dom';
-import Ninja from './Ninja';
+import NinjaBouncingOrders from './NinjaBouncingOrders';
 import NinjaStore from './store';
 import LastUsedSymbols from './LastUsedSymbols';
 
@@ -10,9 +10,9 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
   if (!currentScript) throw new Error('Unable to detect currentScript');
   const ninjaWidget = store.customization.createWidget({
-    id: 'altamoon_ninja',
+    id: 'altamoon_ninja_bouncing_order',
     hasSettings: true,
-    title: 'Ninja',
+    title: 'Bouncing order',
     currentScript,
     layout: { h: 6, w: 4, minH: 5 },
   });
@@ -20,7 +20,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const lastUsedSymbolsWidget = store.customization.createWidget({
     id: 'altamoon_ninja_last_used',
     hasSettings: false,
-    title: 'Last used',
+    title: 'Last used symbols' ,
     currentScript,
     layout: { h: 3, w: 4, minH: 1 },
   });
@@ -32,7 +32,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
 
   render((
     <Provider value={store}>
-      <Ninja
+      <NinjaBouncingOrders
         settingsElement={ninjaWidget.settingsElement}
         listenSettingsSave={ninjaWidget.listenSettingsSave}
         listenSettingsCancel={ninjaWidget.listenSettingsCancel}

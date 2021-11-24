@@ -1,7 +1,6 @@
 import * as api from 'altamoon-binance-api';
 import { RootStore } from 'altamoon-types';
 import { listenChange } from 'use-change';
-import { without } from 'lodash';
 
 // https://themushroomkingdom.net/media/smb/wav
 const jumpSound = new Audio('https://themushroomkingdom.net/sounds/wav/smb/smb_bump.wav');
@@ -9,6 +8,18 @@ const jumpSound = new Audio('https://themushroomkingdom.net/sounds/wav/smb/smb_b
 function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
   const storageValue = localStorage.getItem(`ninja_${key}`);
   return storageValue ? JSON.parse(storageValue) as T : defaultValue;
+}
+
+type BouncingOrderId = string;
+
+export interface BouncingOrder {
+  id: BouncingOrderId;
+  isEnabled: boolean;
+  reduceOnly: boolean;
+  symbol: string;
+  side: api.OrderSide;
+  valueStr: string;
+  candlesInterval: api.CandlestickChartInterval;
 }
 
 export default class NinjaStore {
@@ -20,22 +31,20 @@ export default class NinjaStore {
 
   public bouncedOrderReduceOnly = false;
 
-  public candlesInterval: api.CandlestickChartInterval = '3m';
-
-  public candles: api.FuturesChartCandle[] = [];
-
   public soundsOn = getPersistentStorageValue<NinjaStore, boolean>('soundsOn', false);
 
   public lastUsedSymbols = getPersistentStorageValue<NinjaStore, string[]>('lastUsedSymbols', []);
 
-  #store: RootStore;
+  public bouncingOrders = getPersistentStorageValue<NinjaStore, BouncingOrder[]>('bouncingOrders', []);
 
-  #chartUnsubscribe?: () => void;
+  #subscriptions: Record<BouncingOrderId, () => void> = {};
+
+  #store: RootStore;
 
   constructor(store: RootStore) {
     this.#store = store;
 
-    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'lastUsedSymbols'];
+    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'bouncingOrders'];
 
     keysToListen.forEach((key) => {
       listenChange(this, key, (value: unknown) => {
@@ -43,46 +52,86 @@ export default class NinjaStore {
       });
     });
 
-    listenChange(store.persistent, 'symbol', this.#onSymbolChange);
-
-    this.#onSymbolChange();
+    this.bouncingOrders.map(({ id }) => this.#subscribe(id));
   }
 
-  #onSymbolChange = (): void => {
-    const { symbol } = this.#store.persistent;
-    const lastUsed = [symbol].concat(without(this.lastUsedSymbols, symbol)).slice(0, 10);
-    this.lastUsedSymbols = lastUsed;
-    this.#chartUnsubscribe?.();
-    this.#chartUnsubscribe = api.futuresChartSubscribe({
+  public createBouncingOrder = () => {
+    const id = new Date().toISOString();
+    const bouncingOrder: BouncingOrder = {
+      id,
+      isEnabled: false,
       symbol: this.#store.persistent.symbol,
-      interval: this.candlesInterval,
-      callback: this.#handle,
+      side: 'BUY',
+      candlesInterval: this.#store.persistent.interval,
+      reduceOnly: false,
+      valueStr: '',
+    };
+
+    this.bouncingOrders = [...this.bouncingOrders, bouncingOrder];
+
+    this.#subscribe(id);
+  };
+
+  public deleteBouncingOrder = (id: BouncingOrderId) => {
+    this.#unsubscribe(id);
+
+    this.bouncingOrders = this.bouncingOrders.filter((o) => o.id !== id);
+  };
+
+  public resubscribe = (id: string) => {
+    this.#unsubscribe(id);
+    this.#subscribe(id);
+  };
+
+  #unsubscribe = (id: BouncingOrderId) => {
+    this.#subscriptions[id]();
+    delete this.#subscriptions[id];
+  };
+
+  #subscribe = (id: BouncingOrderId) => {
+    const bouncingOrder = this.bouncingOrders.find((o) => o.id === id);
+
+    if (!bouncingOrder) throw new Error(`Unable to find bouncing order ${id}`);
+
+    const { symbol, candlesInterval } = bouncingOrder;
+
+    const unsubscribe = api.futuresChartSubscribe({
+      symbol,
+      interval: candlesInterval,
+      callback: (origCandles) => this.#subscriptionCallback(id, origCandles),
       limit: 99,
       firstTickFromCache: false,
     });
+
+    this.#subscriptions[id] = unsubscribe;
   };
 
-  #handle = (origCandles: api.FuturesChartCandle[]): void => {
+  #subscriptionCallback = (id: BouncingOrderId, origCandles: api.FuturesChartCandle[]) => {
+    const bouncingOrder = this.bouncingOrders.find((o) => o.id === id);
+
+    if (!bouncingOrder) throw new Error(`Unable to find bouncing order ${id}`);
+
+    if (!bouncingOrder.isEnabled) return;
     const candles = NinjaStore.smoozCandles(origCandles);
     const lastCandle = candles[candles.length - 1];
-    const { symbol } = this.#store.persistent;
 
     const {
-      bouncedOrderReduceOnly: reduceOnly, bouncedOrderSide: side, isBouncedOrderEnabled: isEnabled,
-    } = this;
+      symbol, side, reduceOnly, valueStr,
+    } = bouncingOrder;
     const price = this.#store.market.currentSymbolLastPrice;
-
     const size = this.#store.trading.calculateSizeFromString(
-      this.#store.persistent.symbol, this.bouncedOrderValueStr,
+      symbol, valueStr,
     );
 
-    if (!isEnabled || !lastCandle || !size || !price) return;
+    if (!lastCandle || !size || !price) return;
 
     const quantity = this.#store.trading.calculateQuantity({
       symbol, price, size,
     });
 
-    const { direction } = lastCandle;
+    const { direction, symbol: sym, interval } = lastCandle;
+
+    console.log('direction', sym, interval, direction);
 
     if ((side === 'BUY' && direction === 'UP') || (side === 'SELL' && direction === 'DOWN')) {
       // eslint-disable-next-line no-console
@@ -92,7 +141,10 @@ export default class NinjaStore {
       });
 
       if (this.soundsOn) void jumpSound.play();
-      this.isBouncedOrderEnabled = false;
+
+      this.bouncingOrders = this.bouncingOrders.map(
+        (o) => (o.id === id ? { ...o, isEnabled: false } : o),
+      );
     }
   };
 
