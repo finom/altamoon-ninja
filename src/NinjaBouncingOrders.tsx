@@ -98,7 +98,9 @@ const NinjaBouncingOrders = ({
                     </label>
                   </td>
                   <td>
-                    <Symbols value={symbol} onChange={(v) => updateBouncingOrder(id, 'symbol', v)} />
+                    <div style={{ width: '160px' }}>
+                      <Symbols value={symbol} onChange={(v) => updateBouncingOrder(id, 'symbol', v)} />
+                    </div>
                   </td>
                   <td>
                     <Link45deg size={20} className="cursor-pointer" onClick={() => setSymbol(symbol)} />
