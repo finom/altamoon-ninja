@@ -6,7 +6,7 @@ import { useValue } from 'use-change';
 
 const CompoundInterestCalculator = () => {
   const totalWalletBalance = useValue(({ account }: RootStore) => account, 'totalWalletBalance');
-  const dailyPnlPercent = useValue(({ stats }: RootStore) => stats, 'dailyPnlPercent');
+  const dailyPnlPercent = useValue(({ stats }: RootStore) => stats, 'dailyPnlPercent') * 100;
   const [perDay, setPerDay] = useState(+dailyPnlPercent.toFixed(2));
   const [initial, setInitial] = useState(+totalWalletBalance.toFixed(2));
   const getResult = (days: number) => {
