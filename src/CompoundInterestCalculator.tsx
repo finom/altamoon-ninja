@@ -35,9 +35,9 @@ const CompoundInterestCalculator = () => {
   return (
     <div>
       <label className="mb-1">% per day</label>
-      <Input type="number" className="mb-3" value={perDay} onChange={({ target }) => setPerDay(+target.value || 0)} />
+      <Input type="text" className="mb-3" value={perDay} onChange={({ target }) => setPerDay(+target.value || 0)} />
       <label className="mb-1">Initial balance $</label>
-      <Input type="number" className="mb-3" value={initial} onChange={({ target }) => setInitial(+target.value || 0)} />
+      <Input type="text" className="mb-3" value={initial} onChange={({ target }) => setInitial(+target.value || 0)} />
 
       <ul>
         <li>
