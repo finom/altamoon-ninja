@@ -1,5 +1,5 @@
 import { RootStore } from 'altamoon-types';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { hot } from 'react-hot-loader/root';
 import { Input } from 'reactstrap';
 import { useValue } from 'use-change';
@@ -7,8 +7,8 @@ import { useValue } from 'use-change';
 const CompoundInterestCalculator = () => {
   const totalWalletBalance = useValue(({ account }: RootStore) => account, 'totalWalletBalance');
   const dailyPnlPercent = useValue(({ stats }: RootStore) => stats, 'dailyPnlPercent');
-  const [perDay, setPerDay] = useState(dailyPnlPercent);
-  const [initial, setInitial] = useState(totalWalletBalance);
+  const [perDay, setPerDay] = useState(+dailyPnlPercent.toFixed(2));
+  const [initial, setInitial] = useState(+totalWalletBalance.toFixed(2));
   const getResult = (days: number) => {
     let balance = initial;
     for (let i = 0; i <= days; i += 1) {
@@ -17,7 +17,13 @@ const CompoundInterestCalculator = () => {
     return balance;
   };
 
-  const calcPercent = (b: number) => (((b / initial - 1) * 100 || 0).toFixed(2)).toLocaleString();
+  useEffect(() => { setPerDay(+dailyPnlPercent.toFixed(2)); }, [dailyPnlPercent]);
+  useEffect(() => { setInitial(+totalWalletBalance.toFixed(2)); }, [totalWalletBalance]);
+
+  const calcPercent = (b: number) => {
+    const percent = (b / initial - 1) * 100 || 0;
+    return (percent > 0 ? '+' : '') + (percent.toFixed(2)).toLocaleString();
+  };
   const formatNumber = (n: number) => (+n.toFixed(2)).toLocaleString();
 
   const week = getResult(7);
@@ -39,7 +45,7 @@ const CompoundInterestCalculator = () => {
           {' '}
           <span>{formatNumber(week)}</span>
           {' '}
-          (+
+          (
           <span>{calcPercent(week)}</span>
           %)
         </li>
@@ -48,7 +54,7 @@ const CompoundInterestCalculator = () => {
           {' '}
           <span>{formatNumber(month)}</span>
           {' '}
-          (+
+          (
           <span>{calcPercent(month)}</span>
           %)
         </li>
@@ -57,7 +63,7 @@ const CompoundInterestCalculator = () => {
           {' '}
           <span>{formatNumber(season)}</span>
           {' '}
-          (+
+          (
           <span>{calcPercent(season)}</span>
           %)
         </li>
@@ -66,7 +72,7 @@ const CompoundInterestCalculator = () => {
           {' '}
           <span>{formatNumber(halfYear)}</span>
           {' '}
-          (+
+          (
           <span>{calcPercent(halfYear)}</span>
           %)
         </li>
@@ -75,7 +81,7 @@ const CompoundInterestCalculator = () => {
           {' '}
           <span>{formatNumber(year)}</span>
           {' '}
-          (+
+          (
           <span>{calcPercent(year)}</span>
           %)
         </li>
