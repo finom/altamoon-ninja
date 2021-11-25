@@ -1,5 +1,6 @@
 import * as api from 'altamoon-binance-api';
 import { RootStore } from 'altamoon-types';
+import { without } from 'lodash';
 import { listenChange } from 'use-change';
 
 // https://themushroomkingdom.net/media/smb/wav
@@ -53,7 +54,16 @@ export default class NinjaStore {
     });
 
     this.bouncingOrders.map(({ id }) => this.#subscribe(id));
+
+    listenChange(store.persistent, 'symbol', this.#onSymbolChange);
+
+    this.#onSymbolChange();
   }
+
+  #onSymbolChange = () => {
+    const { symbol } = this.#store.persistent;
+    this.lastUsedSymbols = [symbol].concat(without(this.lastUsedSymbols, symbol)).slice(0, 10);
+  };
 
   public createBouncingOrder = () => {
     const id = new Date().toISOString();
