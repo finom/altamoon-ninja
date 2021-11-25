@@ -19,6 +19,6 @@ Allows to easily switch between last used symbols.
 
 # Compound interest calculator
 
-![image](https://user-images.githubusercontent.com/1082083/143499271-c3123e0e-f6da-4646-9c87-11d640ac21cb.png)
+![image](https://user-images.githubusercontent.com/1082083/143499366-8b1999ec-27fc-4d70-9d99-f5aea85ce649.png)
 
 Calculates potential profit.
