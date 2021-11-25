@@ -45,7 +45,7 @@ export default class NinjaStore {
   constructor(store: RootStore) {
     this.#store = store;
 
-    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'bouncingOrders'];
+    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'bouncingOrders', 'lastUsedSymbols'];
 
     keysToListen.forEach((key) => {
       listenChange(this, key, (value: unknown) => {
