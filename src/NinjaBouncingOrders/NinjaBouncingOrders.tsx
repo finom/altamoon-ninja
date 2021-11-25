@@ -11,11 +11,11 @@ import styled from 'styled-components';
 import { RootStore } from 'altamoon-types';
 import { createPortal } from 'react-dom';
 import { Link45deg, Trash } from 'react-bootstrap-icons';
-import Toggle from './components/Toggle';
-import { BouncingOrder, NINJA } from './store';
+import Toggle from '../components/Toggle';
+import { BouncingOrder, NINJA } from '../store';
 import Settings from './Settings';
-import Intervals from './components/Intervals';
-import Symbols from './components/Symbols';
+import Intervals from '../components/Intervals';
+import Symbols from '../components/Symbols';
 
 const EnabledTr = styled.tr<{ enabled: boolean; }>`
   animation: ${({ enabled }) => (enabled ? 'bouncingEnabledBlinker 2s linear infinite' : 'none')};

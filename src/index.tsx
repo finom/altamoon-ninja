@@ -2,9 +2,10 @@ import * as t from 'altamoon-types';
 import React from 'react';
 import { Provider } from 'use-change';
 import { render } from 'react-dom';
-import NinjaBouncingOrders from './NinjaBouncingOrders';
+import NinjaBouncingOrders from './NinjaBouncingOrders/NinjaBouncingOrders';
 import NinjaStore from './store';
 import LastUsedSymbols from './LastUsedSymbols';
+import CompoundInterestCalculator from './CompoundInterestCalculator';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -21,6 +22,14 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     id: 'altamoon_ninja_last_used',
     hasSettings: false,
     title: 'Last used symbols',
+    currentScript,
+    layout: { h: 3, w: 4, minH: 1 },
+  });
+
+  const compoundICWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_cic',
+    hasSettings: false,
+    title: 'Compound interest calculator',
     currentScript,
     layout: { h: 3, w: 4, minH: 1 },
   });
@@ -45,4 +54,10 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
       <LastUsedSymbols />
     </Provider>
   ), lastUsedSymbolsWidget.element);
+
+  render((
+    <Provider value={store}>
+      <CompoundInterestCalculator />
+    </Provider>
+  ), compoundICWidget.element);
 });
