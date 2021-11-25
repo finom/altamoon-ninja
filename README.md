@@ -16,3 +16,9 @@ The tool can be useful for parabolic price changes only. **Use at your own risk!
 ![image](https://user-images.githubusercontent.com/1082083/143251785-169777e0-73fd-409b-8759-42a533fa3ebe.png)
 
 Allows to easily switch between last used symbols.
+
+# Compound interest calculator
+
+![image](https://user-images.githubusercontent.com/1082083/143499366-8b1999ec-27fc-4d70-9d99-f5aea85ce649.png)
+
+Calculates potential profit.
