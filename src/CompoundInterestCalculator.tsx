@@ -1,46 +1,14 @@
+import { RootStore } from 'altamoon-types';
 import React, { useState } from 'react';
 import { hot } from 'react-hot-loader/root';
 import { Input } from 'reactstrap';
-
-/*
-function handler() {
-  const percentPerDay = +form.percentPerDay.value || 0;
-  const initialBalance = +form.balance.value || 0;
-  let balance = initialBalance;
-  const calcPercent = (b) => ((b / initialBalance - 1) * 100)
-
-  for(let i = 0; i <= 365; i++) {
-    balance *= (percentPerDay / 100) + 1;
-    if(i === 7) {
-      form.result7.value = balance;
-      form.result7Percent.value = calcPercent(balance);
-    }
-
-    if(i === 30) {
-      form.result30.value = balance;
-      form.result30Percent.value = calcPercent(balance);
-    }
-
-    if(i === 90) {
-      form.result90.value = balance;
-      form.result90Percent.value = calcPercent(balance);
-    }
-
-    if(i === 180) {
-      form.result180.value = balance;
-      form.result180Percent.value = calcPercent(balance);
-    }
-
-    if(i === 365) {
-      form.resultYear.value = balance;
-      form.resultYearPercent.value = calcPercent(balance);
-    }
-  }
-*/
+import { useValue } from 'use-change';
 
 const CompoundInterestCalculator = () => {
-  const [perDay, setPerDay] = useState(2);
-  const [initial, setInitial] = useState(100);
+  const totalWalletBalance = useValue(({ account }: RootStore) => account, 'totalWalletBalance');
+  const dailyPnlPercent = useValue(({ stats }: RootStore) => stats, 'dailyPnlPercent');
+  const [perDay, setPerDay] = useState(dailyPnlPercent);
+  const [initial, setInitial] = useState(totalWalletBalance);
   const getResult = (days: number) => {
     let balance = initial;
     for (let i = 0; i <= days; i += 1) {
@@ -57,8 +25,6 @@ const CompoundInterestCalculator = () => {
   const season = getResult(90);
   const halfYear = getResult(180);
   const year = getResult(365);
-
-  console.log('week', week);
 
   return (
     <div>
