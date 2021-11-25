@@ -24,14 +24,6 @@ export interface BouncingOrder {
 }
 
 export default class NinjaStore {
-  public isBouncedOrderEnabled = false;
-
-  public bouncedOrderSide: api.OrderSide = 'BUY';
-
-  public bouncedOrderValueStr = '';
-
-  public bouncedOrderReduceOnly = false;
-
   public soundsOn = getPersistentStorageValue<NinjaStore, boolean>('soundsOn', false);
 
   public lastUsedSymbols = getPersistentStorageValue<NinjaStore, string[]>('lastUsedSymbols', []);
