@@ -139,9 +139,10 @@ export default class NinjaStore {
       symbol, price, size,
     });
 
-    const { direction } = lastCandle;
+    const { direction, time } = lastCandle;
 
-    // console.log('lastCandle', lastCandle);
+    // ignore fresh candles
+    if (time + 3000 > Date.now()) return;
 
     if ((side === 'BUY' && direction === 'UP') || (side === 'SELL' && direction === 'DOWN')) {
       // eslint-disable-next-line no-console
