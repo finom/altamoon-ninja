@@ -65,9 +65,14 @@ export default class NinjaSignals {
         timeISO: new Date().toISOString(),
       });
 
-      this.#store.ninja.persistent.minMax = minMax;
+      if (
+        this.#store.ninja.persistent.soundsOn
+          && this.#store.ninja.persistent.minMax.length !== minMax.length
+      ) {
+        void sound.play();
+      }
 
-      if (this.#store.ninja.persistent.soundsOn) void sound.play();
+      this.#store.ninja.persistent.minMax = minMax;
     }
   };
 }
