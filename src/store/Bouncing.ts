@@ -25,7 +25,7 @@ export default class NinjaBouncing {
     const { symbol } = this.#store.persistent;
     this.#store.ninja.persistent.lastUsedSymbols = [symbol].concat(
       without(this.#store.ninja.persistent.lastUsedSymbols, symbol),
-    ).slice(0, 10);
+    ).slice(0, 30);
   };
 
   public createBouncingOrder = () => {
