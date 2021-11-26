@@ -22,7 +22,7 @@ const CompoundInterestCalculator = () => {
 
   const calcPercent = (b: number) => {
     const percent = (b / initial - 1) * 100 || 0;
-    return (percent > 0 ? '+' : '') + (+percent.toFixed(2)).toLocaleString();
+    return (percent > 0 ? '+' : '') + (+percent.toFixed(1)).toLocaleString();
   };
   const formatNumber = (n: number) => (+n.toFixed(2)).toLocaleString();
 
