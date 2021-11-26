@@ -67,7 +67,7 @@ export default class NinjaSignals {
 
       if (
         this.#store.ninja.persistent.soundsOn
-          && this.#store.ninja.persistent.minMax[0]?.symbol !== minMax[0]?.symbol
+          && this.#store.ninja.persistent.minMax.length !== minMax.length
       ) {
         void sound.play();
       }
