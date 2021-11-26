@@ -59,7 +59,7 @@ export default class NinjaSignals {
 
       minMax = minMax.filter((mm) => mm.symbol !== symbol);
       minMax.unshift({
-        type: high === price ? 'MAX' : 'MIN',
+        type: +high <= +price ? 'MAX' : 'MIN',
         symbol,
         price: +high,
         timeISO: new Date().toISOString(),
