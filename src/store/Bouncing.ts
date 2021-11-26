@@ -1,51 +1,20 @@
 import * as api from 'altamoon-binance-api';
-import { RootStore } from 'altamoon-types';
 import { without } from 'lodash';
 import { listenChange } from 'use-change';
+import { BouncingOrder, BouncingOrderId } from './types';
 
 // https://themushroomkingdom.net/media/smb/wav
 const jumpSound = new Audio('https://themushroomkingdom.net/sounds/wav/smb/smb_bump.wav');
 
-function getPersistentStorageValue<O, T>(key: keyof O & string, defaultValue: T): T {
-  const storageValue = localStorage.getItem(`ninja_${key}`);
-  return storageValue ? JSON.parse(storageValue) as T : defaultValue;
-}
-
-type BouncingOrderId = string;
-
-export interface BouncingOrder {
-  id: BouncingOrderId;
-  isEnabled: boolean;
-  reduceOnly: boolean;
-  symbol: string;
-  side: api.OrderSide;
-  valueStr: string;
-  candlesInterval: api.CandlestickChartInterval;
-}
-
-export default class NinjaStore {
-  public soundsOn = getPersistentStorageValue<NinjaStore, boolean>('soundsOn', false);
-
-  public lastUsedSymbols = getPersistentStorageValue<NinjaStore, string[]>('lastUsedSymbols', []);
-
-  public bouncingOrders = getPersistentStorageValue<NinjaStore, BouncingOrder[]>('bouncingOrders', []);
-
+export default class NinjaBouncing {
   #subscriptions: Record<BouncingOrderId, () => void> = {};
 
-  #store: RootStore;
+  #store: EnhancedRootStore;
 
-  constructor(store: RootStore) {
+  constructor(store: EnhancedRootStore) {
     this.#store = store;
 
-    const keysToListen: (keyof NinjaStore)[] = ['soundsOn', 'bouncingOrders', 'lastUsedSymbols'];
-
-    keysToListen.forEach((key) => {
-      listenChange(this, key, (value: unknown) => {
-        localStorage.setItem(`ninja_${key}`, JSON.stringify(value));
-      });
-    });
-
-    this.bouncingOrders.map(({ id }) => this.#subscribe(id));
+    store.ninja.persistent.bouncingOrders.map(({ id }) => this.#subscribe(id));
 
     listenChange(store.persistent, 'symbol', this.#onSymbolChange);
 
@@ -54,7 +23,9 @@ export default class NinjaStore {
 
   #onSymbolChange = () => {
     const { symbol } = this.#store.persistent;
-    this.lastUsedSymbols = [symbol].concat(without(this.lastUsedSymbols, symbol)).slice(0, 10);
+    this.#store.ninja.persistent.lastUsedSymbols = [symbol].concat(
+      without(this.#store.ninja.persistent.lastUsedSymbols, symbol),
+    ).slice(0, 10);
   };
 
   public createBouncingOrder = () => {
@@ -69,7 +40,9 @@ export default class NinjaStore {
       valueStr: '',
     };
 
-    this.bouncingOrders = [...this.bouncingOrders, bouncingOrder];
+    this.#store.ninja.persistent.bouncingOrders = [
+      ...this.#store.ninja.persistent.bouncingOrders, bouncingOrder,
+    ];
 
     this.#subscribe(id);
   };
@@ -77,7 +50,8 @@ export default class NinjaStore {
   public deleteBouncingOrder = (id: BouncingOrderId) => {
     this.#unsubscribe(id);
 
-    this.bouncingOrders = this.bouncingOrders.filter((o) => o.id !== id);
+    this.#store.ninja.persistent.bouncingOrders = this.#store.ninja.persistent.bouncingOrders
+      .filter((o) => o.id !== id);
   };
 
   public resubscribe = (id: string) => {
@@ -91,7 +65,7 @@ export default class NinjaStore {
   };
 
   #subscribe = (id: BouncingOrderId) => {
-    const bouncingOrder = this.bouncingOrders.find((o) => o.id === id);
+    const bouncingOrder = this.#store.ninja.persistent.bouncingOrders.find((o) => o.id === id);
 
     if (!bouncingOrder) throw new Error(`Unable to find bouncing order ${id}`);
 
@@ -109,12 +83,12 @@ export default class NinjaStore {
   };
 
   #subscriptionCallback = (id: BouncingOrderId, origCandles: api.FuturesChartCandle[]) => {
-    const bouncingOrder = this.bouncingOrders.find((o) => o.id === id);
+    const bouncingOrder = this.#store.ninja.persistent.bouncingOrders.find((o) => o.id === id);
 
     if (!bouncingOrder) throw new Error(`Unable to find bouncing order ${id}`);
 
     if (!bouncingOrder.isEnabled) return;
-    const candles = NinjaStore.smoozCandles(origCandles);
+    const candles = NinjaBouncing.smoozCandles(origCandles);
     const lastCandle = candles[candles.length - 1];
 
     const {
@@ -143,9 +117,9 @@ export default class NinjaStore {
         side, reduceOnly, quantity, symbol,
       });
 
-      if (this.soundsOn) void jumpSound.play();
+      if (this.#store.ninja.persistent.soundsOn) void jumpSound.play();
 
-      this.bouncingOrders = this.bouncingOrders.map(
+      this.#store.ninja.persistent.bouncingOrders = this.#store.ninja.persistent.bouncingOrders.map(
         (o) => (o.id === id ? { ...o, isEnabled: false } : o),
       );
     }
@@ -238,5 +212,3 @@ export default class NinjaStore {
     return newCandles;
   };
 }
-
-export const NINJA = ({ ninja }: RootStore & { ninja: NinjaStore }): NinjaStore => ninja;

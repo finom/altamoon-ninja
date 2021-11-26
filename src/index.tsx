@@ -1,11 +1,12 @@
 import * as t from 'altamoon-types';
 import React from 'react';
 import { Provider } from 'use-change';
-import { render } from 'react-dom';
-import NinjaBouncingOrders from './NinjaBouncingOrders/NinjaBouncingOrders';
+import { createPortal, render } from 'react-dom';
+import NinjaBouncingOrders from './NinjaBouncingOrders';
 import NinjaStore from './store';
 import LastUsedSymbols from './LastUsedSymbols';
 import CompoundInterestCalculator from './CompoundInterestCalculator';
+import NinjaMinMax from './NinjaMinMax';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -34,10 +35,19 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     layout: { h: 3, w: 4, minH: 1 },
   });
 
-  if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
+  const signalsWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_signals',
+    hasSettings: true,
+    title: 'Min/Max 24h',
+    currentScript,
+    layout: { h: 3, w: 4, minH: 1 },
+  });
 
-  // eslint-disable-next-line no-param-reassign
-  store.ninja = new NinjaStore(store);
+  if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
+  if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
+
+  // eslint-disable-next-line no-new
+  new NinjaStore(store);
 
   render((
     <Provider value={store}>
@@ -46,18 +56,13 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
         listenSettingsSave={ninjaWidget.listenSettingsSave}
         listenSettingsCancel={ninjaWidget.listenSettingsCancel}
       />
+      {createPortal(<LastUsedSymbols />, lastUsedSymbolsWidget.element)}
+      {createPortal(<CompoundInterestCalculator />, compoundICWidget.element)}
+      {createPortal((<NinjaMinMax
+        settingsElement={signalsWidget.settingsElement}
+        listenSettingsSave={signalsWidget.listenSettingsSave}
+        listenSettingsCancel={signalsWidget.listenSettingsCancel}
+      />), signalsWidget.element)}
     </Provider>
   ), ninjaWidget.element);
-
-  render((
-    <Provider value={store}>
-      <LastUsedSymbols />
-    </Provider>
-  ), lastUsedSymbolsWidget.element);
-
-  render((
-    <Provider value={store}>
-      <CompoundInterestCalculator />
-    </Provider>
-  ), compoundICWidget.element);
 });

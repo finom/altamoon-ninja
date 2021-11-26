@@ -12,10 +12,11 @@ import { RootStore } from 'altamoon-types';
 import { createPortal } from 'react-dom';
 import { Link45deg, Trash } from 'react-bootstrap-icons';
 import Toggle from '../components/Toggle';
-import { BouncingOrder, NINJA } from '../store';
-import Settings from './Settings';
+import { NINJA_BOUNCING, NINJA_PERSISTENT } from '../store';
+import Settings from './BouncingSettings';
 import Intervals from '../components/Intervals';
 import Symbols from '../components/Symbols';
+import { BouncingOrder } from '../store/types';
 
 const EnabledTr = styled.tr<{ enabled: boolean; }>`
   animation: ${({ enabled }) => (enabled ? 'bouncingEnabledBlinker 2s linear infinite' : 'none')};
@@ -36,12 +37,12 @@ interface Props {
 const NinjaBouncingOrders = ({
   settingsElement, listenSettingsSave, listenSettingsCancel,
 }: Props): ReactElement => {
-  const [soundsOn, setSoundsOn] = useChange(NINJA, 'soundsOn');
-  const [bouncingOrders, setBouncingOrders] = useChange(NINJA, 'bouncingOrders');
+  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'soundsOn');
+  const [bouncingOrders, setBouncingOrders] = useChange(NINJA_PERSISTENT, 'bouncingOrders');
   const [settingsSoundsOn, setSettingsSoundsOn] = useState<boolean>(soundsOn);
-  const createBouncingOrder = useSilent(NINJA, 'createBouncingOrder');
-  const deleteBouncingOrder = useSilent(NINJA, 'deleteBouncingOrder');
-  const resubscribe = useSilent(NINJA, 'resubscribe');
+  const createBouncingOrder = useSilent(NINJA_BOUNCING, 'createBouncingOrder');
+  const deleteBouncingOrder = useSilent(NINJA_BOUNCING, 'deleteBouncingOrder');
+  const resubscribe = useSilent(NINJA_BOUNCING, 'resubscribe');
   const setSymbol = useSet(({ persistent }: RootStore) => persistent, 'symbol');
 
   const updateBouncingOrder = useCallback((
