@@ -22,3 +22,9 @@ Allows to easily switch between last used symbols.
 ![image](https://user-images.githubusercontent.com/1082083/143499366-8b1999ec-27fc-4d70-9d99-f5aea85ce649.png)
 
 Calculates potential profit.
+
+# Min/Max 24h
+
+![image](https://user-images.githubusercontent.com/1082083/143557144-15d2dff8-6fb7-43af-94e4-4572cca39764.png)
+
+Signals at minimum or maximum for last 24h
