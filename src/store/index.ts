@@ -1,8 +1,11 @@
 import { RootStore } from 'altamoon-types';
+import * as api from 'altamoon-binance-api';
+
 import NinjaBouncing from './Bouncing';
 import NinjaPersistent from './Persistent';
 import NinjaSignals from './Signals';
 import NinjaPositionInfo from './PositionInfo';
+import Recommendations from './Recommendations';
 
 export default class NinjaStore {
   public rootStore: RootStore;
@@ -15,6 +18,10 @@ export default class NinjaStore {
 
   public positionsInfo: NinjaPositionInfo;
 
+  public recommendations: Recommendations;
+
+  public exchangeInfo?: api.FuturesExchangeInfo;
+
   constructor(rootStore: EnhancedRootStore) {
     this.rootStore = rootStore;
 
@@ -25,6 +32,21 @@ export default class NinjaStore {
     this.bouncing = new NinjaBouncing(rootStore);
     this.signals = new NinjaSignals(rootStore);
     this.positionsInfo = new NinjaPositionInfo(rootStore);
+    this.recommendations = new Recommendations(rootStore);
+
+    const {
+      binanceApiKey, binanceApiSecret, testnetBinanceApiKey, testnetBinanceApiSecret, isTestnet,
+    } = rootStore.persistent;
+
+    const apiKey = isTestnet ? testnetBinanceApiKey : binanceApiKey;
+    const apiSecret = isTestnet ? testnetBinanceApiSecret : binanceApiSecret;
+    if (apiKey && apiSecret) {
+      api.setOptions({ apiKey, apiSecret, isTestnet });
+    }
+
+    void api.futuresExchangeInfo().then((exchangeInfo) => {
+      this.exchangeInfo = exchangeInfo;
+    });
   }
 }
 
@@ -37,3 +59,4 @@ export const NINJA_PERSISTENT = ({ ninja }: EnhancedRootStore): NinjaStore['pers
 export const NINJA_BOUNCING = ({ ninja }: EnhancedRootStore): NinjaStore['bouncing'] => ninja.bouncing;
 export const NINJA_SIGNALS = ({ ninja }: EnhancedRootStore): NinjaStore['signals'] => ninja.signals;
 export const NINJA_POSITION_INFO = ({ ninja }: EnhancedRootStore): NinjaStore['positionsInfo'] => ninja.positionsInfo;
+export const NINJA_RECOMMENDATIONS = ({ ninja }: EnhancedRootStore): NinjaStore['recommendations'] => ninja.recommendations;

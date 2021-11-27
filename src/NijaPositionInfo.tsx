@@ -12,7 +12,7 @@ const NijaPositionInfo = () : ReactElement => {
   return (
     <ul>
       {info.map(({ symbol, risk }) => (
-        <li>
+        <li key={symbol}>
           <span className="link-alike" onClick={() => setSymbol(symbol)}>{symbol}</span>
           {' '}
           risk:

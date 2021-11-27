@@ -19,7 +19,11 @@ export default class NinjaSignals {
     api.futuresTickerStream((tickers) => {
       Object.assign(this.#tickers, keyBy(tickers, 'symbol'));
     });
-    void this.#aggTradeSubscribe();
+
+    listenChange(store.ninja, 'exchangeInfo', (exchangeInfo) => {
+      this.exchangeInfo = exchangeInfo;
+      this.#aggTradeSubscribe();
+    });
 
     listenChange(store.ninja.persistent, 'minMaxTop', this.#aggTradeSubscribe);
 
@@ -30,9 +34,9 @@ export default class NinjaSignals {
     }, 30_000);
   }
 
-  #aggTradeSubscribe = async () => {
-    const exchangeInfo = this.exchangeInfo || await api.futuresExchangeInfo();
-    this.exchangeInfo = exchangeInfo;
+  #aggTradeSubscribe = () => {
+    const { exchangeInfo } = this;
+    if (!exchangeInfo) return;
     const { symbols } = exchangeInfo;
 
     const listenedSymbols = symbols.filter(({ contractType }) => contractType === 'PERPETUAL')
