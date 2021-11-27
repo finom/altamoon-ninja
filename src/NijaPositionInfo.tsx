@@ -6,12 +6,12 @@ import classNames from 'classnames';
 import { NINJA_POSITION_INFO } from './store';
 
 const NijaPositionInfo = () : ReactElement => {
-  const info = useValue(NINJA_POSITION_INFO, 'info');
+  const risks = useValue(NINJA_POSITION_INFO, 'risks');
   const setSymbol = useSet(({ persistent }: RootStore) => persistent, 'symbol');
 
   return (
     <ul>
-      {info.map(({ symbol, risk }) => (
+      {risks.map(({ symbol, risk }) => (
         <li key={symbol}>
           <span className="link-alike" onClick={() => setSymbol(symbol)}>{symbol}</span>
           {' '}

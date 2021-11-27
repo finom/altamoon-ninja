@@ -12,7 +12,7 @@ export default class PositionInfo {
 
   #pnls: Record<string, number[]> = {};
 
-  public info: { symbol: string; risk: Risk }[] = [];
+  public risks: { symbol: string; risk: Risk }[] = [];
 
   constructor(store: EnhancedRootStore) {
     this.#store = store;
@@ -22,7 +22,7 @@ export default class PositionInfo {
 
   #check = () => {
     const { openPositions } = this.#store.trading;
-    const info: PositionInfo['info'] = [];
+    const risks: PositionInfo['risks'] = [];
     // collect PNLs
     for (const { symbol, pnlPositionPercent } of openPositions) {
       const pnls = this.#pnls[symbol] || [];
@@ -49,9 +49,9 @@ export default class PositionInfo {
       else if (mean > 0.05) risk = 'moderate';
       else risk = 'low';
 
-      info.push({ symbol, risk });
+      risks.push({ symbol, risk });
     }
 
-    this.info = info;
+    this.risks = risks;
   };
 }
