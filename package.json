@@ -1,6 +1,6 @@
 {
   "name": "altamoon-ninja",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Tools and half-automated experimental strategies for Altamoon",
   "main": "dist/bundle.js",
   "scripts": {
