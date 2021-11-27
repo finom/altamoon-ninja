@@ -7,6 +7,7 @@ import NinjaStore from './store';
 import LastUsedSymbols from './LastUsedSymbols';
 import CompoundInterestCalculator from './CompoundInterestCalculator';
 import NinjaMinMax from './NinjaMinMax';
+import NijaPositionInfo from './NijaPositionInfo';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -43,6 +44,14 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     layout: { h: 3, w: 4, minH: 1 },
   });
 
+  const positionInfoWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_position_info',
+    hasSettings: false,
+    title: 'Position info',
+    currentScript,
+    layout: { h: 3, w: 4, minH: 1 },
+  });
+
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
 
@@ -58,6 +67,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
       />
       {createPortal(<LastUsedSymbols />, lastUsedSymbolsWidget.element)}
       {createPortal(<CompoundInterestCalculator />, compoundICWidget.element)}
+      {createPortal(<NijaPositionInfo />, positionInfoWidget.element)}
       {createPortal((<NinjaMinMax
         settingsElement={signalsWidget.settingsElement}
         listenSettingsSave={signalsWidget.listenSettingsSave}
