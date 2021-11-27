@@ -9,7 +9,9 @@ function persist<T>(key: keyof NinjaPersistent, defaultValue: T): T {
 }
 
 export default class NinjaPersistent {
-  public soundsOn = persist<boolean>('soundsOn', false);
+  public bouncingSoundsOn = persist<boolean>('bouncingSoundsOn', false);
+
+  public minMaxSoundsOn = persist<boolean>('minMaxSoundsOn', false);
 
   public lastUsedSymbols = persist<string[]>('lastUsedSymbols', []);
 

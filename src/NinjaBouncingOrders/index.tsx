@@ -6,11 +6,13 @@ import {
   Button,
   Col, Input, Row, Table,
 } from 'reactstrap';
-import useChange, { useSet, useSilent } from 'use-change';
+import useChange, { useSilent } from 'use-change';
 import styled from 'styled-components';
 import { RootStore } from 'altamoon-types';
 import { createPortal } from 'react-dom';
-import { Link45deg, Trash } from 'react-bootstrap-icons';
+import {
+  ArrowBarDown, ArrowBarUp, Trash,
+} from 'react-bootstrap-icons';
 import Toggle from '../components/Toggle';
 import { NINJA_BOUNCING, NINJA_PERSISTENT } from '../store';
 import Settings from './BouncingSettings';
@@ -37,13 +39,13 @@ interface Props {
 const NinjaBouncingOrders = ({
   settingsElement, listenSettingsSave, listenSettingsCancel,
 }: Props): ReactElement => {
-  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'soundsOn');
+  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'bouncingSoundsOn');
   const [bouncingOrders, setBouncingOrders] = useChange(NINJA_PERSISTENT, 'bouncingOrders');
   const [settingsSoundsOn, setSettingsSoundsOn] = useState<boolean>(soundsOn);
   const createBouncingOrder = useSilent(NINJA_BOUNCING, 'createBouncingOrder');
   const deleteBouncingOrder = useSilent(NINJA_BOUNCING, 'deleteBouncingOrder');
   const resubscribe = useSilent(NINJA_BOUNCING, 'resubscribe');
-  const setSymbol = useSet(({ persistent }: RootStore) => persistent, 'symbol');
+  const [currentSymbol, setSymbol] = useChange(({ persistent }: RootStore) => persistent, 'symbol');
 
   const updateBouncingOrder = useCallback((
     id: string, key: keyof BouncingOrder, value: BouncingOrder[typeof key],
@@ -104,7 +106,16 @@ const NinjaBouncingOrders = ({
                     </div>
                   </td>
                   <td>
-                    <Link45deg size={20} className="cursor-pointer" onClick={() => setSymbol(symbol)} />
+                    <ArrowBarUp
+                      size={20}
+                      className="cursor-pointer me-2"
+                      onClick={() => setSymbol(symbol)}
+                    />
+                    <ArrowBarDown
+                      size={20}
+                      className="cursor-pointer"
+                      onClick={() => updateBouncingOrder(id, 'symbol', currentSymbol)}
+                    />
                   </td>
                   <td>
                     <div style={{ width: '120px' }}>

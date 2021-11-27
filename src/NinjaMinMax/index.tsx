@@ -1,5 +1,5 @@
 import React, {
-  memo, ReactElement, useEffect, useState,
+  ReactElement, useEffect, useState,
 } from 'react';
 import { RootStore } from 'altamoon-types';
 import useChange, { useSet, useValue } from 'use-change';
@@ -7,6 +7,7 @@ import Moment from 'react-moment';
 import { ArrowDown, ArrowUp } from 'react-bootstrap-icons';
 
 import { createPortal } from 'react-dom';
+import { hot } from 'react-hot-loader/root';
 import { NINJA_PERSISTENT } from '../store';
 import MinMaxSettings from './MinMaxSettings';
 
@@ -23,23 +24,36 @@ const NinjaMinMax = ({
   const minMax = useValue(NINJA_PERSISTENT, 'minMax');
   const [minMaxTop, setMinMaxTop] = useChange(NINJA_PERSISTENT, 'minMaxTop');
   const [settingsMinMaxTop, setSettingsMinMaxTop] = useState<number>(minMaxTop);
+  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'minMaxSoundsOn');
+  const [settingsSoundsOn, setSettingsSoundsOn] = useState<boolean>(soundsOn);
 
   // update pnlType after settings save
   useEffect(
-    () => listenSettingsSave(() => { setMinMaxTop(settingsMinMaxTop); }),
-    [listenSettingsSave, setMinMaxTop, settingsMinMaxTop],
+    () => listenSettingsSave(() => {
+      setSoundsOn(settingsSoundsOn);
+      setMinMaxTop(settingsMinMaxTop);
+    }),
+    [listenSettingsSave, setMinMaxTop, setSoundsOn, settingsMinMaxTop, settingsSoundsOn],
   );
 
   // reset pnlType setting after settings change cancel
   useEffect(
-    () => listenSettingsCancel(() => { setSettingsMinMaxTop(minMaxTop); }),
-    [listenSettingsCancel, minMaxTop],
+    () => listenSettingsCancel(() => {
+      setSettingsMinMaxTop(minMaxTop);
+      setSettingsSoundsOn(soundsOn);
+    }),
+    [listenSettingsCancel, minMaxTop, soundsOn],
   );
 
   return (
     <>
       {createPortal((
-        <MinMaxSettings minMaxTop={settingsMinMaxTop} setMinMaxTop={setSettingsMinMaxTop} />
+        <MinMaxSettings
+          soundsOn={settingsSoundsOn}
+          setSoundsOn={setSettingsSoundsOn}
+          minMaxTop={settingsMinMaxTop}
+          setMinMaxTop={setSettingsMinMaxTop}
+        />
       ), settingsElement)}
       {!minMax.length && <em>No min/max signals yet</em>}
       <ul>
@@ -65,4 +79,4 @@ const NinjaMinMax = ({
   );
 };
 
-export default memo(NinjaMinMax);
+export default hot(NinjaMinMax);

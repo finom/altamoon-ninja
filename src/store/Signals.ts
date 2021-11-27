@@ -66,7 +66,7 @@ export default class NinjaSignals {
       });
 
       if (
-        this.#store.ninja.persistent.soundsOn
+        this.#store.ninja.persistent.minMaxSoundsOn
           && this.#store.ninja.persistent.minMax.length !== minMax.length
       ) {
         void sound.play();

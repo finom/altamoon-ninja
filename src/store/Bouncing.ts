@@ -117,7 +117,7 @@ export default class NinjaBouncing {
         side, reduceOnly, quantity, symbol,
       });
 
-      if (this.#store.ninja.persistent.soundsOn) void jumpSound.play();
+      if (this.#store.ninja.persistent.bouncingSoundsOn) void jumpSound.play();
 
       this.#store.ninja.persistent.bouncingOrders = this.#store.ninja.persistent.bouncingOrders.map(
         (o) => (o.id === id ? { ...o, isEnabled: false } : o),
