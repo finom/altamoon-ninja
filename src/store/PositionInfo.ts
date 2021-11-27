@@ -45,8 +45,8 @@ export default class PositionInfo {
 
       let risk: Risk;
 
-      if (mean > 0.5) risk = 'high';
-      else if (mean > 0.1) risk = 'moderate';
+      if (mean > 0.3) risk = 'high';
+      else if (mean > 0.05) risk = 'moderate';
       else risk = 'low';
 
       info.push({ symbol, risk });
