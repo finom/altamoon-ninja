@@ -48,7 +48,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const positionInfoWidget = store.customization.createWidget({
     id: 'altamoon_ninja_position_info',
     hasSettings: false,
-    title: 'Position info',
+    title: 'PNL volatility',
     currentScript,
     layout: { h: 3, w: 4, minH: 1 },
   });

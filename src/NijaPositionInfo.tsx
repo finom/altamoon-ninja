@@ -14,8 +14,7 @@ const NijaPositionInfo = () : ReactElement => {
       {risks.map(({ symbol, risk }) => (
         <li key={symbol}>
           <span className="link-alike" onClick={() => setSymbol(symbol)}>{symbol}</span>
-          {' '}
-          risk:
+          :
           {' '}
           <span className={classNames({
             'text-danger': risk === 'high',
