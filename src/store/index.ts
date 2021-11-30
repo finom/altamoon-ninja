@@ -6,6 +6,7 @@ import NinjaPersistent from './Persistent';
 import NinjaSignals from './Signals';
 import NinjaPositionInfo from './PositionInfo';
 import Recommendations from './Recommendations';
+import AgainstBTC from './AgainstBTC';
 
 export default class NinjaStore {
   public rootStore: RootStore;
@@ -20,6 +21,8 @@ export default class NinjaStore {
 
   public recommendations: Recommendations;
 
+  public againstBTC: AgainstBTC;
+
   public exchangeInfo?: api.FuturesExchangeInfo;
 
   constructor(rootStore: EnhancedRootStore) {
@@ -33,6 +36,7 @@ export default class NinjaStore {
     this.signals = new NinjaSignals(rootStore);
     this.positionsInfo = new NinjaPositionInfo(rootStore);
     this.recommendations = new Recommendations(rootStore);
+    this.againstBTC = new AgainstBTC(rootStore);
 
     const {
       binanceApiKey, binanceApiSecret, testnetBinanceApiKey, testnetBinanceApiSecret, isTestnet,
@@ -60,3 +64,4 @@ export const NINJA_BOUNCING = ({ ninja }: EnhancedRootStore): NinjaStore['bounci
 export const NINJA_SIGNALS = ({ ninja }: EnhancedRootStore): NinjaStore['signals'] => ninja.signals;
 export const NINJA_POSITION_INFO = ({ ninja }: EnhancedRootStore): NinjaStore['positionsInfo'] => ninja.positionsInfo;
 export const NINJA_RECOMMENDATIONS = ({ ninja }: EnhancedRootStore): NinjaStore['recommendations'] => ninja.recommendations;
+export const NINJA_AGAINST_BTC = ({ ninja }: EnhancedRootStore): NinjaStore['againstBTC'] => ninja.againstBTC;

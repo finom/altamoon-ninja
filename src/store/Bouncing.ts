@@ -127,7 +127,7 @@ export default class NinjaBouncing {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  private static candlesToHeikinAshi = (candles: api.FuturesChartCandle[]) => {
+  public static candlesToHeikinAshi = (candles: api.FuturesChartCandle[]) => {
     const newCandles: api.FuturesChartCandle[] = [];
     for (let i = 0; i < candles.length; i += 1) {
       const {
@@ -159,7 +159,7 @@ export default class NinjaBouncing {
    * Returns an array of smoothed candles.
    * (Based on heikin ashi candles, but keeps the real high & low)
    */
-  private static smoozCandles = (
+  public static smoozCandles = (
     candles: api.FuturesChartCandle[],
   ): api.FuturesChartCandle[] => {
     const newCandles: api.FuturesChartCandle[] = [];

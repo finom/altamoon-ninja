@@ -9,6 +9,7 @@ import CompoundInterestCalculator from './CompoundInterestCalculator';
 import NinjaMinMax from './NinjaMinMax';
 import NijaPositionInfo from './NijaPositionInfo';
 import NinjaRecommendations from './NinjaRecommendations';
+import NinjaAgainstBTC from './NinjaAgainstBTC';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -61,6 +62,14 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     layout: { h: 3, w: 4, minH: 1 },
   });
 
+  const againstBTCWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_againstbtc',
+    hasSettings: false,
+    title: 'Against BTC strategy',
+    currentScript,
+    layout: { h: 3, w: 4, minH: 1 },
+  });
+
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
 
@@ -83,6 +92,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
       {createPortal(<CompoundInterestCalculator />, compoundICWidget.element)}
       {createPortal(<NijaPositionInfo />, positionInfoWidget.element)}
       {createPortal(<NinjaRecommendations />, recommendationsWidget.element)}
+      {createPortal(<NinjaAgainstBTC />, againstBTCWidget.element)}
     </Provider>
   ), ninjaWidget.element);
 });
