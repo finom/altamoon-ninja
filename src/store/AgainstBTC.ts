@@ -19,6 +19,8 @@ export default class AgainstBTC {
 
   #allSymbolsUnsubscribe?: () => void;
 
+  #tickTimes: Record<string, number> = {};
+
   constructor(store: EnhancedRootStore) {
     this.#store = store;
     listenChange(store.ninja, 'exchangeInfo', (exchangeInfo) => {
@@ -213,18 +215,23 @@ export default class AgainstBTC {
 
       this.#allCandlesData[symbol] = candlesData;
 
-      void AgainstBTC.tick(
-        symbol,
-        this.#allCandlesData.BTCUSDT,
-        candlesData,
-        this.#store.ninja.persistent.itemsAgainstBtc,
-        this.#store.ninja.persistent.againstBTCCandlesThreshold,
-      ).then(([isChanged, newItems]) => {
-        if (isChanged && newItems) {
-          this.#store.ninja.persistent.itemsAgainstBtc = newItems;
-          if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
-        }
-      });
+      const now = Date.now();
+
+      if (!this.#tickTimes[symbol] || this.#tickTimes[symbol] > now - 2000) {
+        this.#tickTimes[symbol] = now;
+        void AgainstBTC.tick(
+          symbol,
+          this.#allCandlesData.BTCUSDT,
+          candlesData,
+          this.#store.ninja.persistent.itemsAgainstBtc,
+          this.#store.ninja.persistent.againstBTCCandlesThreshold,
+        ).then(([isChanged, newItems]) => {
+          if (isChanged && newItems) {
+            this.#store.ninja.persistent.itemsAgainstBtc = newItems;
+            if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+          }
+        });
+      }
     });
   };
 }
