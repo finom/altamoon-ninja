@@ -1,5 +1,7 @@
 import { listenChange } from 'use-change';
+import * as api from 'altamoon-binance-api';
 import { BouncingOrder, MinMaxSignal } from './types';
+import { AgainstBtcDatum } from './AgainstBTC';
 
 const STORAGE_PREFIX = 'ninja_';
 
@@ -20,6 +22,14 @@ export default class NinjaPersistent {
   public minMax = persist<MinMaxSignal[]>('minMax', []);
 
   public minMaxTop = persist<number>('minMaxTop', 5);
+
+  public againstBTCCandlesThreshold = persist<number>('againstBTCCandlesThreshold', 5);
+
+  public againstBTCCandlesInterval = persist<api.CandlestickChartInterval>('againstBTCCandlesInterval', '1m');
+
+  public againstBTCSoundsOn = persist<boolean>('againstBTCSoundsOn', false);
+
+  public itemsAgainstBtc = persist<AgainstBtcDatum[]>('itemsAgainstBtc', []);
 
   constructor() {
     Object.getOwnPropertyNames(this).forEach((key) => {

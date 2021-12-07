@@ -64,14 +64,15 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
 
   const againstBTCWidget = store.customization.createWidget({
     id: 'altamoon_ninja_againstbtc',
-    hasSettings: false,
-    title: 'Against BTC strategy',
+    hasSettings: true,
+    title: 'Against BTC',
     currentScript,
     layout: { h: 3, w: 4, minH: 1 },
   });
 
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
+  if (!againstBTCWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
 
   // eslint-disable-next-line no-new
   new NinjaStore(store);
@@ -92,7 +93,11 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
       {createPortal(<CompoundInterestCalculator />, compoundICWidget.element)}
       {createPortal(<NijaPositionInfo />, positionInfoWidget.element)}
       {createPortal(<NinjaRecommendations />, recommendationsWidget.element)}
-      {createPortal(<NinjaAgainstBTC />, againstBTCWidget.element)}
+      {createPortal(<NinjaAgainstBTC
+        settingsElement={againstBTCWidget.settingsElement}
+        listenSettingsSave={againstBTCWidget.listenSettingsSave}
+        listenSettingsCancel={againstBTCWidget.listenSettingsCancel}
+      />, againstBTCWidget.element)}
     </Provider>
   ), ninjaWidget.element);
 });

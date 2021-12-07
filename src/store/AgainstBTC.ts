@@ -1,28 +1,196 @@
 import * as api from 'altamoon-binance-api';
-import { omit } from 'lodash';
 import { listenChange } from 'use-change';
 import NinjaBouncing from './Bouncing';
 
+export interface AgainstBtcDatum {
+  symbol: string;
+  direction: api.FuturesChartCandle['direction'],
+  num: number;
+  timeISO: string;
+}
+
+// https://themushroomkingdom.net/media/smb/wav
+const sound = new Audio('https://themushroomkingdom.net/sounds/wav/smb/smb_fireball.wav');
+
 export default class AgainstBTC {
-  public allCandles: Record<string, api.FuturesChartCandle[]> = {};
+  #store: EnhancedRootStore;
+
+  #allCandlesData: Record<string, api.FuturesChartCandle[]> = {};
+
+  #allSymbolsUnsubscribe?: () => void;
 
   constructor(store: EnhancedRootStore) {
-    listenChange(store.ninja, 'exchangeInfo', async (exchangeInfo) => {
+    this.#store = store;
+    listenChange(store.ninja, 'exchangeInfo', (exchangeInfo) => {
       if (!exchangeInfo) return;
 
-      const allCandles: AgainstBTC['allCandles'] = {};
-
-      await Promise.all(exchangeInfo.symbols.filter(
-        ({ contractType }) => contractType === 'PERPETUAL',
-      ).map(async ({ symbol }) => {
-        allCandles[symbol] = await this.#loadKLines(symbol);
-      }));
-
-      this.allCandles = allCandles;
+      this.#resubscribe();
     });
+
+    // clear older values
+    setInterval(() => {
+      this.#store.ninja.persistent.itemsAgainstBtc = this.#store.ninja.persistent.itemsAgainstBtc
+        .filter(({ timeISO }) => new Date(timeISO).getTime() > Date.now() - 1000 * 60 * 60); // 1h
+    }, 30_000);
   }
 
-  public backtest = () => {
+  #tick = (symbol: string) => {
+    // candles may have different length,
+    // that's why we need to reverse and start from index 0 (last candle)
+    const candles = NinjaBouncing.smoozCandles(
+      this.#allCandlesData[symbol] ?? [],
+    ).reverse();
+    const btcCandles = NinjaBouncing.smoozCandles(
+      this.#allCandlesData.BTCUSDT ?? [],
+    ).reverse() ?? [];
+
+    const NUM_CANDLES_MIN_THRESHOLD = this.#store.ninja.persistent.againstBTCCandlesThreshold;
+
+    if (!NUM_CANDLES_MIN_THRESHOLD) return;
+
+    if (
+      symbol === 'BTCUSDT' // don't compare BTC symbols to themselves
+      || !btcCandles.length // btc had no tick yet
+      // both btc and other symbol candles have the same time
+      || btcCandles[0].time !== candles[0].time
+    ) return;
+
+    let upCount = 0;
+    let downCount = 0;
+
+    for (let i = 0; i < candles.length; i += 1) {
+      const candle = candles[i];
+      const btcCandle = btcCandles[i];
+      if (btcCandle.direction === 'UP' && candle.direction === 'DOWN') {
+        if (upCount !== 0 && i < NUM_CANDLES_MIN_THRESHOLD) return;
+        downCount += 1;
+      } else if (btcCandle.direction === 'DOWN' && candle.direction === 'UP') {
+        if (downCount !== 0 && i < NUM_CANDLES_MIN_THRESHOLD) return;
+        upCount += 1;
+      } else break;
+    }
+
+    if (
+      upCount >= NUM_CANDLES_MIN_THRESHOLD
+      && !this.#store.ninja.persistent.itemsAgainstBtc.some(
+        (item) => item.symbol === symbol && item.num === upCount && item.direction === 'UP',
+      )
+    ) {
+      this.#store.ninja.persistent.itemsAgainstBtc = [
+        {
+          symbol, direction: 'UP', num: upCount, timeISO: new Date().toISOString(),
+        },
+        ...this.#store.ninja.persistent.itemsAgainstBtc.filter((item) => item.symbol !== symbol),
+      ];
+
+      if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+    } else if (
+      downCount >= NUM_CANDLES_MIN_THRESHOLD
+      && !this.#store.ninja.persistent.itemsAgainstBtc.some(
+        (item) => item.symbol === symbol && item.num === downCount && item.direction === 'DOWN',
+      )
+    ) {
+      this.#store.ninja.persistent.itemsAgainstBtc = [
+        {
+          symbol, direction: 'DOWN', num: downCount, timeISO: new Date().toISOString(),
+        },
+        ...this.#store.ninja.persistent.itemsAgainstBtc.filter((item) => item.symbol !== symbol),
+      ];
+
+      if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+    }
+  };
+
+  #resubscribe = () => {
+    this.#allSymbolsUnsubscribe?.();
+    this.#allSymbolsUnsubscribe = this.#allSymbolsSubscribe();
+  };
+
+  #allSymbolsSubscribe = (): (() => void) => {
+    const { exchangeInfo, persistent } = this.#store.ninja;
+    const { againstBTCCandlesInterval: interval } = persistent;
+
+    if (!exchangeInfo) return () => {}; // noop
+
+    const { symbols } = exchangeInfo;
+
+    for (const { symbol } of symbols.filter(
+      ({ contractType, symbol: s }) => contractType === 'PERPETUAL' && !['BTCDOMUSDT'].includes(s),
+    )) {
+      void api.futuresCandles({
+        // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
+        symbol, interval, limit: 499, lastCandleFromCache: true,
+      }).then((candles) => {
+        this.#allCandlesData[symbol] = candles;
+      }).catch((e) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      });
+    }
+
+    const subscriptionPairs = symbols.map(
+      ({ symbol }) => [symbol, interval] as [string, api.CandlestickChartInterval],
+    );
+
+    return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
+      const { symbol } = candle;
+      const data = this.#allCandlesData[symbol];
+
+      if (!data) return;
+
+      if (candle.time === data[data.length - 1].time) {
+        Object.assign(data[data.length - 1], candle);
+      } else {
+        data.push(candle);
+      }
+
+      const candlesData = [...data];
+
+      this.#allCandlesData[symbol] = candlesData;
+
+      this.#tick(symbol);
+    });
+  };
+
+  /*
+  protected loadKLines = async (symbol: string): Promise<api.FuturesChartCandle[]> => {
+    const interval = this.#store.ninja.persistent.againstBTCCandlesInterval;
+
+    const klines = await api.promiseRequest<(string | number)[][]>('v1/klines', {
+      symbol, interval, limit: 499,
+    });
+
+    const requestedCandles = klines.map(([
+      time, open, high, low, close, volume, closeTime, quoteVolume,
+      trades, takerBuyBaseVolume, takerBuyQuoteVolume,
+    ]) => {
+      const candle: api.FuturesChartCandle = {
+        symbol,
+        interval,
+        time: time as number,
+        closeTime: closeTime as number,
+        open: +open,
+        high: +high,
+        low: +low,
+        close: +close,
+        volume: +volume,
+        quoteVolume: +quoteVolume,
+        takerBuyBaseVolume: +takerBuyBaseVolume,
+        takerBuyQuoteVolume: +takerBuyQuoteVolume,
+        trades: trades as number,
+        direction: +open <= +close ? 'UP' : 'DOWN',
+        closeTimeISOString: new Date(closeTime as number).toISOString(),
+        timeISOString: new Date(time as number).toISOString(),
+      };
+
+      return candle;
+    });
+
+    return requestedCandles;
+  };
+
+  // not used
+  protected backtest = () => {
     const { allCandles } = this;
     const btcCandles = NinjaBouncing.smoozCandles(allCandles.BTCUSDT);
     const otherCandles = omit(allCandles, ['BTCUSDT', 'BTCDOMUSDT', 'BTCBUSD', 'ETHBUSD']);
@@ -64,7 +232,8 @@ export default class AgainstBTC {
           }
 
           if (
-            (otherNumUp === num && direction === 'DOWN') || (otherNumDown === num && direction === 'UP')) {
+            (otherNumUp === num && direction === 'DOWN') ||
+            (otherNumDown === num && direction === 'UP')) {
             symbolsAgainst.push({
               symbol,
               change: Math.abs((candle.close - initialCandle.open) / initialCandle.open),
@@ -94,19 +263,16 @@ export default class AgainstBTC {
       const leverage = Math.abs(1 / change) * 0.15;
       const expectedProfit = 1 / leverage;
       const expectedLoss = 2 / leverage;
-      // console.log(change, leverage)
       const profitPrice = initialPrice + (1 * expectedProfit) * (direction === 'UP' ? 1 : -1);
       const lossPrice = initialPrice - (1 * expectedLoss) * (direction === 'UP' ? 1 : -1);
 
       // const leverage = initialPrice / Math.abs(initialPrice - profitPrice)
-      // console.log('ccc', direction,  profitPrice, lossPrice)
 
       let result = 0;
 
       for (let i = startIndex; i < candles.length; i += 1) {
         const candle = candles[i];
         const lastPrice = candle.close;
-        // console.log('sosok', direction, lastPrice,  profitPrice, lossPrice)
 
         if (direction === 'UP') {
           if (lastPrice >= profitPrice) {
@@ -139,20 +305,17 @@ export default class AgainstBTC {
 
       if (numUp >= NUM_CANDLES_MIN_THRESHOLD) {
         const found = searchAgainst(index - numUp, numUp, 'UP');
-        // console.log('found1', found);
         for (const { symbol, change } of found) {
           const [leverage, pnl] = backtestOne({
             change, startIndex: index + 1, symbol, direction: 'UP',
           });
 
           if (leverage < 20) {
-            // console.log('RUN', change, symbol, leverage, pnl * leverage * 100);
             pnls.push(pnl * leverage * 100);
           }
         }
       } else if (numDown >= NUM_CANDLES_MIN_THRESHOLD) {
         const found = searchAgainst(index - numDown, numDown, 'DOWN');
-        // console.log('found2', found);
 
         for (const { symbol, change } of found) {
           const [leverage, pnl] = backtestOne({
@@ -160,7 +323,6 @@ export default class AgainstBTC {
           });
 
           if (leverage < 20) {
-            // console.log('RUN', change, symbol, leverage, pnl * leverage * 100);
             pnls.push(pnl * leverage * 100);
           }
         }
@@ -174,42 +336,5 @@ export default class AgainstBTC {
 
     // eslint-disable-next-line no-console
     console.log('RESULT', sum / pnls.length);
-  };
-
-  #loadKLines = async (
-    symbol: string,
-    interval: api.CandlestickChartInterval = '3m',
-  ): Promise<api.FuturesChartCandle[]> => {
-    const klines = await api.promiseRequest<(string | number)[][]>('v1/klines', {
-      symbol, interval, limit: 499,
-    });
-
-    const requestedCandles = klines.map(([
-      time, open, high, low, close, volume, closeTime, quoteVolume,
-      trades, takerBuyBaseVolume, takerBuyQuoteVolume,
-    ]) => {
-      const candle: api.FuturesChartCandle = {
-        symbol,
-        interval,
-        time: time as number,
-        closeTime: closeTime as number,
-        open: +open,
-        high: +high,
-        low: +low,
-        close: +close,
-        volume: +volume,
-        quoteVolume: +quoteVolume,
-        takerBuyBaseVolume: +takerBuyBaseVolume,
-        takerBuyQuoteVolume: +takerBuyQuoteVolume,
-        trades: trades as number,
-        direction: +open <= +close ? 'UP' : 'DOWN',
-        closeTimeISOString: new Date(closeTime as number).toISOString(),
-        timeISOString: new Date(time as number).toISOString(),
-      };
-
-      return candle;
-    });
-
-    return requestedCandles;
-  };
+  }; */
 }
