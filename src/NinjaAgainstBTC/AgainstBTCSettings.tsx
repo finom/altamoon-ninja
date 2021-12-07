@@ -23,10 +23,10 @@ const AgainstBTCSettings = ({
         type="checkbox"
         checked={soundsOn}
         onChange={({ target }) => setSoundsOn(target.checked)}
-        id="ninjaMinMaxSoundsOn"
+        id="ninjaAgainstBTCSoundsOn"
       />
       {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      <label className="form-check-label" htmlFor="ninjaMinMaxSoundsOn">
+      <label className="form-check-label" htmlFor="ninjaAgainstBTCSoundsOn">
         Sounds on
       </label>
     </div>
@@ -38,7 +38,7 @@ const AgainstBTCSettings = ({
         type="number"
         value={candlesThreshold}
         onChange={({ target }) => setCandlesThreshold(+target.value || 0)}
-        id="ninjaMinMaxTop"
+        id="ninjaAgainstBTCTop"
       />
     </div>
     <div className="mt-3">

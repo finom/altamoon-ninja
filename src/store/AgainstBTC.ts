@@ -1,6 +1,6 @@
 import * as api from 'altamoon-binance-api';
+import thread from 'elegant-threading';
 import { listenChange } from 'use-change';
-import NinjaBouncing from './Bouncing';
 
 export interface AgainstBtcDatum {
   symbol: string;
@@ -38,26 +38,83 @@ export default class AgainstBTC {
     }, 30_000);
   }
 
-  #tick = (symbol: string) => {
+  private static tick = thread((
+    symbol: string,
+    givenBtcCandles: api.FuturesChartCandle[],
+    givenCandles : api.FuturesChartCandle[],
+    itemsAgainstBtc: AgainstBtcDatum[],
+    againstBTCCandlesThreshold: number,
+  ): [false] | [boolean, AgainstBtcDatum[]] => {
+    function smoozCandles(
+      candles: api.FuturesChartCandle[],
+    ): api.FuturesChartCandle[] {
+      const newCandles: api.FuturesChartCandle[] = [];
+
+      for (let i = 0; i < candles.length; i += 1) {
+        const {
+          open, close, high, low,
+        } = candles[i];
+        const previous = newCandles[i - 1] as api.FuturesChartCandle | undefined;
+
+        let newOpen = previous
+          ? (+previous.open + +previous.close) / 2
+          : (open + close) / 2;
+        let newClose = (open + close + high + low) / 4;
+
+        const newDirection = (newOpen <= newClose)
+          ? 'UP' : 'DOWN';
+
+        // Clamp new open to low/high
+        newOpen = newDirection === 'UP'
+          ? Math.max(newOpen, low)
+          : Math.min(newOpen, high);
+
+        // Keep last candle close as vanilla (to visually keep track of price)
+        if (i === candles.length - 1) {
+          newClose = +close;
+        }
+
+        // eslint-disable-next-line prefer-object-spread
+        newCandles.push(Object.assign({}, candles[i], {
+          direction: newDirection,
+          open: newOpen,
+          close: newClose,
+        }));
+
+        // Adjust close/open of previous candle, we don't want gaps
+        if (previous) {
+          if (newDirection === previous.direction) {
+            previous.close = (previous.direction === 'UP')
+              ? Math.max(previous.close, newOpen)
+              : Math.min(previous.close, newOpen);
+          } else {
+            previous.open = (previous.direction === 'DOWN')
+              ? Math.max(previous.open, newOpen)
+              : Math.min(previous.open, newOpen);
+          }
+        }
+      }
+
+      return newCandles;
+    }
     // candles may have different length,
     // that's why we need to reverse and start from index 0 (last candle)
-    const candles = NinjaBouncing.smoozCandles(
-      this.#allCandlesData[symbol] ?? [],
+    const candles = smoozCandles(
+      givenCandles ?? [],
     ).reverse();
-    const btcCandles = NinjaBouncing.smoozCandles(
-      this.#allCandlesData.BTCUSDT ?? [],
+    const btcCandles = smoozCandles(
+      givenBtcCandles ?? [],
     ).reverse() ?? [];
+    let isChanged = false;
 
-    const NUM_CANDLES_MIN_THRESHOLD = this.#store.ninja.persistent.againstBTCCandlesThreshold;
-
-    if (!NUM_CANDLES_MIN_THRESHOLD) return;
+    if (!againstBTCCandlesThreshold) return [false];
 
     if (
       symbol === 'BTCUSDT' // don't compare BTC symbols to themselves
       || !btcCandles.length // btc had no tick yet
       // both btc and other symbol candles have the same time
       || btcCandles[0].time !== candles[0].time
-    ) return;
+    ) return [false];
 
     let upCount = 0;
     let downCount = 0;
@@ -66,44 +123,48 @@ export default class AgainstBTC {
       const candle = candles[i];
       const btcCandle = btcCandles[i];
       if (btcCandle.direction === 'UP' && candle.direction === 'DOWN') {
-        if (upCount !== 0 && i < NUM_CANDLES_MIN_THRESHOLD) return;
+        if (upCount !== 0 && i < againstBTCCandlesThreshold) return [false];
         downCount += 1;
       } else if (btcCandle.direction === 'DOWN' && candle.direction === 'UP') {
-        if (downCount !== 0 && i < NUM_CANDLES_MIN_THRESHOLD) return;
+        if (downCount !== 0 && i < againstBTCCandlesThreshold) return [false];
         upCount += 1;
       } else break;
     }
 
     if (
-      upCount >= NUM_CANDLES_MIN_THRESHOLD
-      && !this.#store.ninja.persistent.itemsAgainstBtc.some(
+      upCount >= againstBTCCandlesThreshold
+      && !itemsAgainstBtc.some(
         (item) => item.symbol === symbol && item.num === upCount && item.direction === 'UP',
       )
     ) {
-      this.#store.ninja.persistent.itemsAgainstBtc = [
-        {
-          symbol, direction: 'UP', num: upCount, timeISO: new Date().toISOString(),
-        },
-        ...this.#store.ninja.persistent.itemsAgainstBtc.filter((item) => item.symbol !== symbol),
-      ];
+      // eslint-disable-next-line no-param-reassign
+      itemsAgainstBtc = itemsAgainstBtc.filter((item) => item.symbol !== symbol);
 
-      if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+      itemsAgainstBtc.unshift({
+        symbol, direction: 'UP', num: upCount, timeISO: new Date().toISOString(),
+      });
+
+      isChanged = true;
+
+      // if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
     } else if (
-      downCount >= NUM_CANDLES_MIN_THRESHOLD
-      && !this.#store.ninja.persistent.itemsAgainstBtc.some(
+      downCount >= againstBTCCandlesThreshold
+      && !itemsAgainstBtc.some(
         (item) => item.symbol === symbol && item.num === downCount && item.direction === 'DOWN',
       )
     ) {
-      this.#store.ninja.persistent.itemsAgainstBtc = [
-        {
-          symbol, direction: 'DOWN', num: downCount, timeISO: new Date().toISOString(),
-        },
-        ...this.#store.ninja.persistent.itemsAgainstBtc.filter((item) => item.symbol !== symbol),
-      ];
+      // eslint-disable-next-line no-param-reassign
+      itemsAgainstBtc = itemsAgainstBtc.filter((item) => item.symbol !== symbol);
 
-      if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+      itemsAgainstBtc.unshift({
+        symbol, direction: 'DOWN', num: downCount, timeISO: new Date().toISOString(),
+      });
+
+      isChanged = true;
     }
-  };
+
+    return [isChanged, itemsAgainstBtc];
+  });
 
   #resubscribe = () => {
     this.#allSymbolsUnsubscribe?.();
@@ -152,11 +213,22 @@ export default class AgainstBTC {
 
       this.#allCandlesData[symbol] = candlesData;
 
-      this.#tick(symbol);
+      void AgainstBTC.tick(
+        symbol,
+        this.#allCandlesData.BTCUSDT,
+        candlesData,
+        this.#store.ninja.persistent.itemsAgainstBtc,
+        this.#store.ninja.persistent.againstBTCCandlesThreshold,
+      ).then(([isChanged, newItems]) => {
+        if (isChanged && newItems) {
+          this.#store.ninja.persistent.itemsAgainstBtc = newItems;
+          if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+        }
+      });
     });
   };
-
-  /*
+}
+/*
   protected loadKLines = async (symbol: string): Promise<api.FuturesChartCandle[]> => {
     const interval = this.#store.ninja.persistent.againstBTCCandlesInterval;
 
@@ -341,4 +413,3 @@ export default class AgainstBTC {
     // eslint-disable-next-line no-console
     console.log('RESULT', sum / pnls.length);
   }; */
-}
