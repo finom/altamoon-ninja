@@ -27,6 +27,10 @@ export default class AgainstBTC {
       this.#resubscribe();
     });
 
+    listenChange(store.ninja.persistent, 'againstBTCCandlesInterval', () => {
+      this.#resubscribe();
+    });
+
     // clear older values
     setInterval(() => {
       this.#store.ninja.persistent.itemsAgainstBtc = this.#store.ninja.persistent.itemsAgainstBtc
