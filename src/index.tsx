@@ -82,6 +82,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!againstBTCWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
+  if (!tallCandlesWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
 
   // eslint-disable-next-line no-new
   new NinjaStore(store);
