@@ -2,6 +2,7 @@ import { listenChange } from 'use-change';
 import * as api from 'altamoon-binance-api';
 import { BouncingOrder, MinMaxSignal } from './types';
 import { AgainstBtcDatum } from './AgainstBTC';
+import { TallCandlesDatum } from './TallCandles';
 
 const STORAGE_PREFIX = 'ninja_';
 
@@ -29,7 +30,15 @@ export default class NinjaPersistent {
 
   public againstBTCSoundsOn = persist<boolean>('againstBTCSoundsOn', false);
 
-  public itemsAgainstBtc = persist<AgainstBtcDatum[]>('itemsAgainstBtc', []);
+  public againstBtcItems = persist<AgainstBtcDatum[]>('againstBtcItems', []);
+
+  public tallCandlesSizeThreshold = persist<number>('tallCandlesSizeThreshold', 10);
+
+  public tallCandlesInterval = persist<api.CandlestickChartInterval>('tallCandlesInterval', '1m');
+
+  public tallCandlesSoundOn = persist<boolean>('tallCandlesSoundOn', false);
+
+  public tallCandlesItems = persist<TallCandlesDatum[]>('tallCandlesItems', []);
 
   constructor() {
     Object.getOwnPropertyNames(this).forEach((key) => {

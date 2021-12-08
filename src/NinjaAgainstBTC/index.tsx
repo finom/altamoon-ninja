@@ -19,7 +19,7 @@ interface Props {
 const NinjaAgainstBTC = ({
   settingsElement, listenSettingsSave, listenSettingsCancel,
 }: Props): ReactElement => {
-  const itemsAgainstBtc = useValue(NINJA_PERSISTENT, 'itemsAgainstBtc');
+  const againstBtcItems = useValue(NINJA_PERSISTENT, 'againstBtcItems');
   const setSymbol = useSet(({ persistent }: RootStore) => persistent, 'symbol');
 
   const [candlesThreshold, setCandlesThreshold] = useChange(NINJA_PERSISTENT, 'againstBTCCandlesThreshold');
@@ -69,9 +69,9 @@ const NinjaAgainstBTC = ({
           setCandlesInterval={setSettingsCandlesInterval}
         />
       ), settingsElement)}
-      {!itemsAgainstBtc.length && <em>No min/max signals yet</em>}
+      {!againstBtcItems.length && <em>No against BTC signals yet</em>}
       <ul>
-        {itemsAgainstBtc.map(({
+        {againstBtcItems.map(({
           symbol, timeISO, direction, num,
         }) => (
           <li key={symbol}>

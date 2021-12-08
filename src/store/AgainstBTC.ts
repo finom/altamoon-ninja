@@ -1,6 +1,6 @@
 import * as api from 'altamoon-binance-api';
-import thread from 'elegant-threading';
 import { listenChange } from 'use-change';
+import smoozCandles from '../lib/smoozCandles';
 
 export interface AgainstBtcDatum {
   symbol: string;
@@ -35,70 +35,18 @@ export default class AgainstBTC {
 
     // clear older values
     setInterval(() => {
-      this.#store.ninja.persistent.itemsAgainstBtc = this.#store.ninja.persistent.itemsAgainstBtc
+      this.#store.ninja.persistent.againstBtcItems = this.#store.ninja.persistent.againstBtcItems
         .filter(({ timeISO }) => new Date(timeISO).getTime() > Date.now() - 1000 * 60 * 60); // 1h
     }, 30_000);
   }
 
-  private static tick = thread((
+  private static tick = (
     symbol: string,
     givenBtcCandles: api.FuturesChartCandle[],
     givenCandles : api.FuturesChartCandle[],
-    itemsAgainstBtc: AgainstBtcDatum[],
+    againstBtcItems: AgainstBtcDatum[],
     againstBTCCandlesThreshold: number,
   ): [false] | [boolean, AgainstBtcDatum[]] => {
-    function smoozCandles(
-      candles: api.FuturesChartCandle[],
-    ): api.FuturesChartCandle[] {
-      const newCandles: api.FuturesChartCandle[] = [];
-
-      for (let i = 0; i < candles.length; i += 1) {
-        const {
-          open, close, high, low,
-        } = candles[i];
-        const previous = newCandles[i - 1] as api.FuturesChartCandle | undefined;
-
-        let newOpen = previous
-          ? (+previous.open + +previous.close) / 2
-          : (open + close) / 2;
-        let newClose = (open + close + high + low) / 4;
-
-        const newDirection = (newOpen <= newClose)
-          ? 'UP' : 'DOWN';
-
-        // Clamp new open to low/high
-        newOpen = newDirection === 'UP'
-          ? Math.max(newOpen, low)
-          : Math.min(newOpen, high);
-
-        // Keep last candle close as vanilla (to visually keep track of price)
-        if (i === candles.length - 1) {
-          newClose = +close;
-        }
-
-        // eslint-disable-next-line prefer-object-spread
-        newCandles.push(Object.assign({}, candles[i], {
-          direction: newDirection,
-          open: newOpen,
-          close: newClose,
-        }));
-
-        // Adjust close/open of previous candle, we don't want gaps
-        if (previous) {
-          if (newDirection === previous.direction) {
-            previous.close = (previous.direction === 'UP')
-              ? Math.max(previous.close, newOpen)
-              : Math.min(previous.close, newOpen);
-          } else {
-            previous.open = (previous.direction === 'DOWN')
-              ? Math.max(previous.open, newOpen)
-              : Math.min(previous.open, newOpen);
-          }
-        }
-      }
-
-      return newCandles;
-    }
     // candles may have different length,
     // that's why we need to reverse and start from index 0 (last candle)
     const candles = smoozCandles(
@@ -135,14 +83,14 @@ export default class AgainstBTC {
 
     if (
       upCount >= againstBTCCandlesThreshold
-      && !itemsAgainstBtc.some(
+      && !againstBtcItems.some(
         (item) => item.symbol === symbol && item.num === upCount && item.direction === 'UP',
       )
     ) {
       // eslint-disable-next-line no-param-reassign
-      itemsAgainstBtc = itemsAgainstBtc.filter((item) => item.symbol !== symbol);
+      againstBtcItems = againstBtcItems.filter((item) => item.symbol !== symbol);
 
-      itemsAgainstBtc.unshift({
+      againstBtcItems.unshift({
         symbol, direction: 'UP', num: upCount, timeISO: new Date().toISOString(),
       });
 
@@ -151,22 +99,22 @@ export default class AgainstBTC {
       // if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
     } else if (
       downCount >= againstBTCCandlesThreshold
-      && !itemsAgainstBtc.some(
+      && !againstBtcItems.some(
         (item) => item.symbol === symbol && item.num === downCount && item.direction === 'DOWN',
       )
     ) {
       // eslint-disable-next-line no-param-reassign
-      itemsAgainstBtc = itemsAgainstBtc.filter((item) => item.symbol !== symbol);
+      againstBtcItems = againstBtcItems.filter((item) => item.symbol !== symbol);
 
-      itemsAgainstBtc.unshift({
+      againstBtcItems.unshift({
         symbol, direction: 'DOWN', num: downCount, timeISO: new Date().toISOString(),
       });
 
       isChanged = true;
     }
 
-    return [isChanged, itemsAgainstBtc];
-  });
+    return [isChanged, againstBtcItems];
+  };
 
   #resubscribe = () => {
     this.#allSymbolsUnsubscribe?.();
@@ -219,18 +167,17 @@ export default class AgainstBTC {
 
       if (!this.#tickTimes[symbol] || this.#tickTimes[symbol] > now - 2000) {
         this.#tickTimes[symbol] = now;
-        void AgainstBTC.tick(
+        const [isChanged, newItems] = AgainstBTC.tick(
           symbol,
           this.#allCandlesData.BTCUSDT,
           candlesData,
-          this.#store.ninja.persistent.itemsAgainstBtc,
+          this.#store.ninja.persistent.againstBtcItems,
           this.#store.ninja.persistent.againstBTCCandlesThreshold,
-        ).then(([isChanged, newItems]) => {
-          if (isChanged && newItems) {
-            this.#store.ninja.persistent.itemsAgainstBtc = newItems;
-            if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
-          }
-        });
+        );
+        if (isChanged && newItems) {
+          this.#store.ninja.persistent.againstBtcItems = newItems;
+          if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
+        }
       }
     });
   };

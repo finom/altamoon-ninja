@@ -10,6 +10,7 @@ import NinjaMinMax from './NinjaMinMax';
 import NijaPositionInfo from './NijaPositionInfo';
 import NinjaRecommendations from './NinjaRecommendations';
 import NinjaAgainstBTC from './NinjaAgainstBTC';
+import NinjaTallCandles from './NinjaTallCandles';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -70,6 +71,14 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     layout: { h: 3, w: 4, minH: 1 },
   });
 
+  const tallCandlesWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_tall_Candles',
+    hasSettings: true,
+    title: 'Tall candles',
+    currentScript,
+    layout: { h: 3, w: 4, minH: 1 },
+  });
+
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!againstBTCWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
@@ -98,6 +107,11 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
         listenSettingsSave={againstBTCWidget.listenSettingsSave}
         listenSettingsCancel={againstBTCWidget.listenSettingsCancel}
       />, againstBTCWidget.element)}
+      {createPortal(<NinjaTallCandles
+        settingsElement={tallCandlesWidget.settingsElement}
+        listenSettingsSave={tallCandlesWidget.listenSettingsSave}
+        listenSettingsCancel={tallCandlesWidget.listenSettingsCancel}
+      />, tallCandlesWidget.element)}
     </Provider>
   ), ninjaWidget.element);
 });

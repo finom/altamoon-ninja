@@ -1,6 +1,7 @@
 import React, {
   ReactElement, useEffect, useState,
 } from 'react';
+import * as api from 'altamoon-binance-api';
 import { RootStore } from 'altamoon-types';
 import useChange, { useSet, useValue } from 'use-change';
 import Moment from 'react-moment';
@@ -21,19 +22,26 @@ const NinjaTallCandles = ({
   settingsElement, listenSettingsSave, listenSettingsCancel,
 }: Props): ReactElement => {
   const setSymbol = useSet(({ persistent }: RootStore) => persistent, 'symbol');
-  const minMax = useValue(NINJA_PERSISTENT, 'minMax');
-  const [tallerTimes, setTallerTimes] = useChange(NINJA_PERSISTENT, 'minMaxTop');
+  const tallCandlesItems = useValue(NINJA_PERSISTENT, 'tallCandlesItems');
+  const [tallerTimes, setTallerTimes] = useChange(NINJA_PERSISTENT, 'tallCandlesSizeThreshold');
   const [settingsTallerTimes, setSettingsTallerTimes] = useState(tallerTimes);
-  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'minMaxSoundsOn');
+  const [soundsOn, setSoundsOn] = useChange(NINJA_PERSISTENT, 'tallCandlesSoundOn');
   const [settingsSoundsOn, setSettingsSoundsOn] = useState<boolean>(soundsOn);
+  const [candlesInterval, setCandlesInterval] = useChange(NINJA_PERSISTENT, 'tallCandlesInterval');
+  const [
+    settingsCandlesInterval, setSettingsCandlesInterval,
+  ] = useState<api.CandlestickChartInterval>(candlesInterval);
 
   // update pnlType after settings save
   useEffect(
     () => listenSettingsSave(() => {
       setSoundsOn(settingsSoundsOn);
       setTallerTimes(settingsTallerTimes);
+      setCandlesInterval(settingsCandlesInterval);
     }),
-    [listenSettingsSave, setSoundsOn, setTallerTimes, settingsSoundsOn, settingsTallerTimes],
+    [
+      listenSettingsSave, setCandlesInterval, setSoundsOn,
+      setTallerTimes, settingsCandlesInterval, settingsSoundsOn, settingsTallerTimes],
   );
 
   // reset pnlType setting after settings change cancel
@@ -41,8 +49,9 @@ const NinjaTallCandles = ({
     () => listenSettingsCancel(() => {
       setSettingsTallerTimes(tallerTimes);
       setSettingsSoundsOn(soundsOn);
+      setSettingsCandlesInterval(candlesInterval);
     }),
-    [listenSettingsCancel, soundsOn, tallerTimes],
+    [candlesInterval, listenSettingsCancel, soundsOn, tallerTimes],
   );
 
   return (
@@ -52,24 +61,28 @@ const NinjaTallCandles = ({
           soundsOn={settingsSoundsOn}
           setSoundsOn={setSettingsSoundsOn}
           tallerTimes={settingsTallerTimes}
+          candlesInterval={settingsCandlesInterval}
+          setCandlesInterval={setSettingsCandlesInterval}
           setTallerTimes={setSettingsTallerTimes}
         />
       ), settingsElement)}
-      {!minMax.length && <em>No min/max signals yet</em>}
+      {!tallCandlesItems.length && <em>No tall candles signals yet</em>}
       <ul>
-        {minMax.map(({
-          symbol, timeISO, type, price,
+        {tallCandlesItems.map(({
+          symbol, timeISO, direction, diff,
         }) => (
           <li key={symbol}>
-            {type === 'MAX' && <ArrowUp className="text-success" />}
+            {direction === 'UP' && <ArrowUp className="text-success" />}
 
-            {type === 'MIN' && <ArrowDown className="text-danger" />}
+            {direction === 'DOWN' && <ArrowDown className="text-danger" />}
             {' '}
             <span className="link-alike" onClick={() => setSymbol(symbol)}>{symbol}</span>
             {' '}
-            at
+            candle body
             {' '}
-            {price}
+            {diff.toFixed(1)}
+            {' '}
+            times taller than avg
             {' '}
             <Moment fromNow>{timeISO}</Moment>
           </li>
