@@ -31,7 +31,7 @@ const TallCandlesSettings = ({
     </div>
     <div>
       <label className="mb-1">
-        How many times a candle should be higher than average candle size
+        How many times a candle body should be higher than average
       </label>
       <Input
         type="number"
