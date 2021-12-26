@@ -11,7 +11,8 @@
     "test": "npm run lint-pure && npx tsc --noemit",
     "upgrade": "npx npm-check-updates -u -x eslint-config-airbnb-typescript && npm i",
     "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
-    "minor": "npm t && npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
+    "minor": "npm t && npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
+    "BREAKING-major": "npm t && npm version major && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
   "author": {
     "name": "Andrey Gubanov",
