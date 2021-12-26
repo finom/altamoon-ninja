@@ -11,10 +11,3 @@ export interface BouncingOrder {
   valueStr: string;
   candlesInterval: api.CandlestickChartInterval;
 }
-
-export interface MinMaxSignal {
-  symbol: string;
-  timeISO: string;
-  price: number;
-  type: 'MIN' | 'MAX';
-}

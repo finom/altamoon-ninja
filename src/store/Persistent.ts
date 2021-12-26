@@ -1,6 +1,6 @@
 import { listenChange } from 'use-change';
 import * as api from 'altamoon-binance-api';
-import { BouncingOrder, MinMaxSignal } from './types';
+import { BouncingOrder } from './types';
 import { AgainstBtcDatum } from './AgainstBTC';
 import { TallCandlesDatum } from './TallCandles';
 
@@ -14,15 +14,9 @@ function persist<T>(key: keyof NinjaPersistent, defaultValue: T): T {
 export default class NinjaPersistent {
   public bouncingSoundsOn = persist<boolean>('bouncingSoundsOn', false);
 
-  public minMaxSoundsOn = persist<boolean>('minMaxSoundsOn', false);
-
   public lastUsedSymbols = persist<string[]>('lastUsedSymbols', []);
 
   public bouncingOrders = persist<BouncingOrder[]>('bouncingOrders', []);
-
-  public minMax = persist<MinMaxSignal[]>('minMax', []);
-
-  public minMaxTop = persist<number>('minMaxTop', 5);
 
   public againstBTCCandlesThreshold = persist<number>('againstBTCCandlesThreshold', 5);
 

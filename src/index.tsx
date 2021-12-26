@@ -5,8 +5,6 @@ import { createPortal, render } from 'react-dom';
 import NinjaBouncingOrders from './NinjaBouncingOrders';
 import NinjaStore from './store';
 import LastUsedSymbols from './LastUsedSymbols';
-import CompoundInterestCalculator from './CompoundInterestCalculator';
-import NinjaMinMax from './NinjaMinMax';
 import NijaPositionInfo from './NijaPositionInfo';
 import NinjaRecommendations from './NinjaRecommendations';
 import NinjaAgainstBTC from './NinjaAgainstBTC';
@@ -20,7 +18,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: true,
     title: 'Bouncing order',
     currentScript,
-    layout: { h: 6, w: 4, minH: 5 },
+    layout: {},
   });
 
   const lastUsedSymbolsWidget = store.customization.createWidget({
@@ -28,23 +26,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: false,
     title: 'Last used symbols',
     currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
-  });
-
-  const compoundICWidget = store.customization.createWidget({
-    id: 'altamoon_ninja_cic',
-    hasSettings: false,
-    title: 'Compound interest calculator',
-    currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
-  });
-
-  const signalsWidget = store.customization.createWidget({
-    id: 'altamoon_ninja_signals',
-    hasSettings: true,
-    title: 'Min/Max 24h',
-    currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
+    layout: {},
   });
 
   const positionInfoWidget = store.customization.createWidget({
@@ -52,7 +34,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: false,
     title: 'PNL volatility',
     currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
+    layout: {},
   });
 
   const recommendationsWidget = store.customization.createWidget({
@@ -60,7 +42,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: false,
     title: 'Recommendations',
     currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
+    layout: {},
   });
 
   const againstBTCWidget = store.customization.createWidget({
@@ -68,7 +50,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: true,
     title: 'Against BTC',
     currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
+    layout: {},
   });
 
   const tallCandlesWidget = store.customization.createWidget({
@@ -76,11 +58,10 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     hasSettings: true,
     title: 'Tall candles',
     currentScript,
-    layout: { h: 3, w: 4, minH: 1 },
+    layout: {},
   });
 
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
-  if (!signalsWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!againstBTCWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!tallCandlesWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
 
@@ -94,13 +75,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
         listenSettingsSave={ninjaWidget.listenSettingsSave}
         listenSettingsCancel={ninjaWidget.listenSettingsCancel}
       />
-      {createPortal((<NinjaMinMax
-        settingsElement={signalsWidget.settingsElement}
-        listenSettingsSave={signalsWidget.listenSettingsSave}
-        listenSettingsCancel={signalsWidget.listenSettingsCancel}
-      />), signalsWidget.element)}
       {createPortal(<LastUsedSymbols />, lastUsedSymbolsWidget.element)}
-      {createPortal(<CompoundInterestCalculator />, compoundICWidget.element)}
       {createPortal(<NijaPositionInfo />, positionInfoWidget.element)}
       {createPortal(<NinjaRecommendations />, recommendationsWidget.element)}
       {createPortal(<NinjaAgainstBTC
