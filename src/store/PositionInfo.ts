@@ -21,6 +21,7 @@ export default class PositionInfo {
   }
 
   #check = () => {
+    if (this.#store.persistent.widgetsDisabled.includes('altamoon_ninja_position_info')) return;
     const { openPositions } = this.#store.trading;
     const risks: PositionInfo['risks'] = [];
     // collect PNLs

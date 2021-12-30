@@ -54,7 +54,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   });
 
   const tallCandlesWidget = store.customization.createWidget({
-    id: 'altamoon_ninja_tall_Candles',
+    id: 'altamoon_ninja_tall_candles',
     hasSettings: true,
     title: 'Tall candles',
     currentScript,

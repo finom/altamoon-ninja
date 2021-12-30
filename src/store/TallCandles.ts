@@ -81,6 +81,7 @@ export default class TallCandles {
       frequency: 2000,
       callback: (symbol, candlesData) => {
         this.#allCandlesData[symbol] = candlesData;
+        if (this.#store.persistent.widgetsDisabled.includes('altamoon_ninja_tall_candles')) return;
         this.#check(symbol);
       },
     });

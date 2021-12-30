@@ -130,6 +130,7 @@ export default class AgainstBTC {
       frequency: 2000,
       callback: (symbol, candlesData) => {
         this.#allCandlesData[symbol] = candlesData;
+        if (this.#store.persistent.widgetsDisabled.includes('altamoon_ninja_againstbtc')) return;
         const [isChanged, newItems] = AgainstBTC.tick(
           symbol,
           this.#allCandlesData.BTCUSDT,
