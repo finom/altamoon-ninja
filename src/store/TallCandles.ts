@@ -18,8 +18,6 @@ export default class TallCandles {
 
   #allSymbolsUnsubscribe?: () => void;
 
-  #tickTimes: Record<string, number> = {};
-
   public exchangeInfo?: api.FuturesExchangeInfo;
 
   constructor(store: EnhancedRootStore) {
@@ -75,6 +73,20 @@ export default class TallCandles {
 
   #allSymbolsSubscribe = (): (() => void) => {
     const { exchangeInfo, persistent } = this.#store.ninja;
+    if (!exchangeInfo) return () => {}; // noop
+    const { unsubscribe } = api.futuresChartWorkerSubscribe({
+      symbols: 'PERPETUAL',
+      interval: persistent.againstBTCCandlesInterval,
+      exchangeInfo,
+      frequency: 2000,
+      callback: (symbol, candlesData) => {
+        this.#allCandlesData[symbol] = candlesData;
+        this.#check(symbol);
+      },
+    });
+
+    return unsubscribe;
+    /* const { exchangeInfo, persistent } = this.#store.ninja;
     const { againstBTCCandlesInterval: interval } = persistent;
 
     if (!exchangeInfo) return () => {}; // noop
@@ -124,6 +136,6 @@ export default class TallCandles {
         this.#tickTimes[symbol] = now;
         this.#check(symbol);
       }
-    });
+    }); */
   };
 }

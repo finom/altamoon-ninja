@@ -19,8 +19,6 @@ export default class AgainstBTC {
 
   #allSymbolsUnsubscribe?: () => void;
 
-  #tickTimes: Record<string, number> = {};
-
   constructor(store: EnhancedRootStore) {
     this.#store = store;
     listenChange(store.ninja, 'exchangeInfo', (exchangeInfo) => {
@@ -123,6 +121,31 @@ export default class AgainstBTC {
 
   #allSymbolsSubscribe = (): (() => void) => {
     const { exchangeInfo, persistent } = this.#store.ninja;
+
+    if (!exchangeInfo) return () => {}; // noop
+    const { unsubscribe } = api.futuresChartWorkerSubscribe({
+      exchangeInfo,
+      symbols: 'PERPETUAL',
+      interval: persistent.againstBTCCandlesInterval,
+      frequency: 2000,
+      callback: (symbol, candlesData) => {
+        this.#allCandlesData[symbol] = candlesData;
+        const [isChanged, newItems] = AgainstBTC.tick(
+          symbol,
+          this.#allCandlesData.BTCUSDT,
+          candlesData,
+          persistent.againstBtcItems,
+          persistent.againstBTCCandlesThreshold,
+        );
+        if (isChanged && newItems) {
+          persistent.againstBtcItems = newItems;
+          if (persistent.againstBTCSoundsOn) void sound.play();
+        }
+      },
+    });
+
+    return unsubscribe;
+    /* const { exchangeInfo, persistent } = this.#store.ninja;
     const { againstBTCCandlesInterval: interval } = persistent;
 
     if (!exchangeInfo) return () => {}; // noop
@@ -179,7 +202,7 @@ export default class AgainstBTC {
           if (this.#store.ninja.persistent.againstBTCSoundsOn) void sound.play();
         }
       }
-    });
+    }); */
   };
 }
 /*
