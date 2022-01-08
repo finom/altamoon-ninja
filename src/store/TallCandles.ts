@@ -46,8 +46,9 @@ export default class TallCandles {
   };
 
   #check = (symbol: string) => {
-    const candles = this.#allCandlesData[symbol];
-    const lastCandle = candles[candles.length - 1];
+    const symbolCandles = this.#allCandlesData[symbol];
+    const lastCandle = symbolCandles[symbolCandles.length - 1];
+    const candles = symbolCandles.slice(0, -1);
     const avgBodySize = candles.reduce(
       (acc, { open, close }) => acc + Math.abs(open - close), 0,
     ) / candles.length;
