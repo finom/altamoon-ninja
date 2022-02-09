@@ -7,6 +7,7 @@ import NinjaPositionInfo from './PositionInfo';
 import Recommendations from './Recommendations';
 import AgainstBTC from './AgainstBTC';
 import TallCandles from './TallCandles';
+import Supertrend from './Supertrend';
 
 export default class NinjaStore {
   public rootStore: RootStore;
@@ -23,6 +24,8 @@ export default class NinjaStore {
 
   public tallCandles: TallCandles;
 
+  public supertrend: Supertrend;
+
   public exchangeInfo?: api.FuturesExchangeInfo;
 
   constructor(rootStore: EnhancedRootStore) {
@@ -37,6 +40,7 @@ export default class NinjaStore {
     this.recommendations = new Recommendations(rootStore);
     this.againstBTC = new AgainstBTC(rootStore);
     this.tallCandles = new TallCandles(rootStore);
+    this.supertrend = new Supertrend(rootStore);
 
     const {
       binanceApiKey, binanceApiSecret, testnetBinanceApiKey, testnetBinanceApiSecret, isTestnet,
@@ -64,3 +68,4 @@ export const NINJA_BOUNCING = ({ ninja }: EnhancedRootStore): NinjaStore['bounci
 export const NINJA_POSITION_INFO = ({ ninja }: EnhancedRootStore): NinjaStore['positionsInfo'] => ninja.positionsInfo;
 export const NINJA_RECOMMENDATIONS = ({ ninja }: EnhancedRootStore): NinjaStore['recommendations'] => ninja.recommendations;
 export const NINJA_AGAINST_BTC = ({ ninja }: EnhancedRootStore): NinjaStore['againstBTC'] => ninja.againstBTC;
+export const NINJA_SUPERTREND = ({ ninja }: EnhancedRootStore): NinjaStore['supertrend'] => ninja.supertrend;

@@ -123,7 +123,7 @@ export default class AgainstBTC {
     const { exchangeInfo, persistent } = this.#store.ninja;
 
     if (!exchangeInfo) return () => {}; // noop
-    const { unsubscribe } = api.futuresChartWorkerSubscribe({
+    const unsubscribe = api.futuresChartWorkerSubscribe({
       exchangeInfo,
       symbols: 'PERPETUAL',
       interval: persistent.againstBTCCandlesInterval,

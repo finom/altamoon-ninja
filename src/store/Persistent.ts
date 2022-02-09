@@ -3,6 +3,7 @@ import * as api from 'altamoon-binance-api';
 import { BouncingOrder } from './types';
 import { AgainstBtcDatum } from './AgainstBTC';
 import { TallCandlesDatum } from './TallCandles';
+import { SupertrendDatum } from './Supertrend';
 
 const STORAGE_PREFIX = 'ninja_';
 
@@ -33,6 +34,10 @@ export default class NinjaPersistent {
   public tallCandlesSoundOn = persist<boolean>('tallCandlesSoundOn', false);
 
   public tallCandlesItems = persist<TallCandlesDatum[]>('tallCandlesItems', []);
+
+  public supertrendItems = persist<SupertrendDatum[]>('supertrendItems', []);
+
+  public supertrendBalanceRatioBidPercentStr = persist<string>('supertrendBalanceRatioBidPercentStr', '');
 
   constructor() {
     Object.getOwnPropertyNames(this).forEach((key) => {
