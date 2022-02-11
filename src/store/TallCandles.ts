@@ -75,7 +75,7 @@ export default class TallCandles {
   #allSymbolsSubscribe = (): (() => void) => {
     const { exchangeInfo, persistent } = this.#store.ninja;
     if (!exchangeInfo) return () => {}; // noop
-    const unsubscribe = api.futuresChartWorkerSubscribe({
+    const unsubscribe = this.#store.futuresChartWorkerSubscribe({
       symbols: 'PERPETUAL',
       interval: persistent.againstBTCCandlesInterval,
       exchangeInfo,

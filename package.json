@@ -55,8 +55,8 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "altamoon-binance-api": "^0.0.361",
-    "altamoon-types": "^0.0.361",
+    "altamoon-binance-api": "^0.0.367",
+    "altamoon-types": "^0.0.367",
     "classnames": "^2.3.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
