@@ -99,8 +99,8 @@ export default class Supertrend {
 
     if (!datum) return;
 
-    const supertrendDirecton = enhancedCandles[enhancedCandles.length - 2].supertrendDirection;
-    const prevSupertrendDirecton = enhancedCandles[enhancedCandles.length - 3].supertrendDirection;
+    const supertrendDirecton = enhancedCandles[enhancedCandles.length - 1].supertrendDirection;
+    const prevSupertrendDirecton = enhancedCandles[enhancedCandles.length - 2].supertrendDirection;
     const quantity = this.#store.trading.calculateQuantity({
       symbol,
       price: candles[candles.length - 1].close,
