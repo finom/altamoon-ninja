@@ -45,7 +45,7 @@
     "@typescript-eslint/parser": "^5.11.0",
     "babel-loader": "^8.2.3",
     "cross-env": "^7.0.3",
-    "eslint": "^8.8.0",
+    "eslint": "^8.9.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^12.3.1",
     "expect.js": "^0.3.1",
@@ -55,8 +55,8 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "altamoon-binance-api": "^0.0.367",
-    "altamoon-types": "^0.0.367",
+    "altamoon-binance-api": "^0.0.370",
+    "altamoon-types": "^0.0.370",
     "classnames": "^2.3.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
