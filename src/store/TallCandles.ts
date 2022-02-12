@@ -88,56 +88,5 @@ export default class TallCandles {
     });
 
     return unsubscribe;
-    /* const { exchangeInfo, persistent } = this.#store.ninja;
-    const { againstBTCCandlesInterval: interval } = persistent;
-
-    if (!exchangeInfo) return () => {}; // noop
-
-    const symbols = exchangeInfo.symbols.filter(
-      ({ contractType, symbol: s }) => contractType === 'PERPETUAL' && !['BTCDOMUSDT'].includes(s),
-    );
-
-    for (const { symbol } of symbols) {
-      void api.futuresCandles({
-        // 499 has weight 3 https://binance-docs.github.io/apidocs/futures/en/#kline-candlestick-data
-        symbol, interval, limit: 499, lastCandleFromCache: true,
-      }).then((candles) => {
-        this.#allCandlesData[symbol] = candles;
-      }).catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error(e);
-      });
-    }
-
-    const subscriptionPairs = symbols.map(
-      ({ symbol }) => [symbol, interval] as [string, api.CandlestickChartInterval],
-    );
-
-    return api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
-      const { symbol } = candle;
-      const data = this.#allCandlesData[symbol];
-
-      if (!data) return;
-
-      if (candle.time === data[data.length - 1].time) {
-        Object.assign(data[data.length - 1], candle);
-      } else {
-        data.push(candle);
-      }
-
-      const candlesData = [...data];
-
-      this.#allCandlesData[symbol] = candlesData;
-
-      const now = Date.now();
-
-      if (
-        this.#store.ninja.persistent.tallCandlesSizeThreshold > 0
-          && (!this.#tickTimes[symbol] || this.#tickTimes[symbol] > now - 2000)
-      ) {
-        this.#tickTimes[symbol] = now;
-        this.#check(symbol);
-      }
-    }); */
   };
 }

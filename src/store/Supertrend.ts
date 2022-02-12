@@ -18,6 +18,8 @@ export default class Supertrend {
 
   #unsubscribe?: () => void;
 
+  #lastTickTime: Record<string, number> = {};
+
   constructor(store: EnhancedRootStore) {
     this.#store = store;
 
@@ -53,7 +55,6 @@ export default class Supertrend {
   #subscribe = () => {
     const data: Record<string, api.FuturesChartCandle[]> = {};
     const { supertrendItems } = this.#store.ninja.persistent;
-    let lastCreatedTime = 0;
 
     this.#unsubscribe?.();
 
@@ -72,17 +73,18 @@ export default class Supertrend {
     );
 
     this.#unsubscribe = api.futuresCandlesSubscribe(subscriptionPairs, (candle) => {
-      if (!data[candle.symbol]) return;
-      if (candle.time === data[candle.symbol][data[candle.symbol].length - 1].time) {
-        Object.assign(data[candle.symbol][data[candle.symbol].length - 1], candle);
+      const { symbol, time } = candle;
+      if (!data[symbol]) return;
+      if (time === data[symbol][data[symbol].length - 1].time) {
+        Object.assign(data[symbol][data[symbol].length - 1], candle);
       } else {
-        data[candle.symbol].push(candle);
+        data[symbol].push(candle);
       }
 
       const now = Date.now();
 
-      if (lastCreatedTime < now - 3_000) {
-        lastCreatedTime = now;
+      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 10_000) {
+        this.#lastTickTime[symbol] = now;
         void this.#process(candle.symbol, [...data[candle.symbol]]);
       }
     });
