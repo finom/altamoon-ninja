@@ -8,6 +8,7 @@ import Recommendations from './Recommendations';
 import AgainstBTC from './AgainstBTC';
 import TallCandles from './TallCandles';
 import Supertrend from './Supertrend';
+import EmaTrend from './EMATrend';
 
 export default class NinjaStore {
   public rootStore: RootStore;
@@ -26,6 +27,8 @@ export default class NinjaStore {
 
   public supertrend: Supertrend;
 
+  public emaTrend: EmaTrend;
+
   public exchangeInfo?: api.FuturesExchangeInfo;
 
   constructor(rootStore: EnhancedRootStore) {
@@ -41,6 +44,7 @@ export default class NinjaStore {
     this.againstBTC = new AgainstBTC(rootStore);
     this.tallCandles = new TallCandles(rootStore);
     this.supertrend = new Supertrend(rootStore);
+    this.emaTrend = new EmaTrend(rootStore)
 
     const {
       binanceApiKey, binanceApiSecret, testnetBinanceApiKey, testnetBinanceApiSecret, isTestnet,
@@ -69,3 +73,4 @@ export const NINJA_POSITION_INFO = ({ ninja }: EnhancedRootStore): NinjaStore['p
 export const NINJA_RECOMMENDATIONS = ({ ninja }: EnhancedRootStore): NinjaStore['recommendations'] => ninja.recommendations;
 export const NINJA_AGAINST_BTC = ({ ninja }: EnhancedRootStore): NinjaStore['againstBTC'] => ninja.againstBTC;
 export const NINJA_SUPERTREND = ({ ninja }: EnhancedRootStore): NinjaStore['supertrend'] => ninja.supertrend;
+export const NINJA_EMA_TREND = ({ ninja }: EnhancedRootStore): NinjaStore['emaTrend'] => ninja.emaTrend;

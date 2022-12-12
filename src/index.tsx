@@ -10,6 +10,7 @@ import NinjaRecommendations from './NinjaRecommendations';
 import NinjaAgainstBTC from './NinjaAgainstBTC';
 import NinjaTallCandles from './NinjaTallCandles';
 import NinjaSupertrend from './NinjaSupertrend';
+import NinjaEmaTrend from './NinjaEmaTrend';
 
 window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
   const { currentScript } = document;
@@ -70,6 +71,14 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
     layout: {},
   });
 
+  const emaWidget = store.customization.createWidget({
+    id: 'altamoon_ninja_ema_trend',
+    hasSettings: false,
+    title: 'EMA Trend',
+    currentScript,
+    layout: {},
+  });
+
   if (!ninjaWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!againstBTCWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
   if (!tallCandlesWidget.settingsElement) throw new Error('Settings element is missing even though "hasSettings" is "true"');
@@ -88,6 +97,7 @@ window.altamoonPlugin((store: t.RootStore & { ninja: NinjaStore }) => {
       {createPortal(<NijaPositionInfo />, positionInfoWidget.element)}
       {createPortal(<NinjaRecommendations />, recommendationsWidget.element)}
       {createPortal(<NinjaSupertrend />, supertrendWidget.element)}
+      {createPortal(<NinjaEmaTrend />, emaWidget.element)}
       {createPortal(<NinjaAgainstBTC
         settingsElement={againstBTCWidget.settingsElement}
         listenSettingsSave={againstBTCWidget.listenSettingsSave}

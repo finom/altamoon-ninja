@@ -4,6 +4,7 @@ import { BouncingOrder } from './types';
 import { AgainstBtcDatum } from './AgainstBTC';
 import { TallCandlesDatum } from './TallCandles';
 import { SupertrendDatum } from './Supertrend';
+import { EmaTrendDatum } from './EMATrend';
 
 const STORAGE_PREFIX = 'ninja_';
 
@@ -37,7 +38,11 @@ export default class NinjaPersistent {
 
   public supertrendItems = persist<SupertrendDatum[]>('supertrendItems', []);
 
+  public emaTrendItems = persist<EmaTrendDatum[]>('emaTrendItems', []);
+
   public supertrendBalanceRatioBidPercentStr = persist<string>('supertrendBalanceRatioBidPercentStr', '');
+  
+  public emaTrendBalanceRatioBidPercentStr = persist<string>('emaTrendBalanceRatioBidPercentStr', '');
 
   constructor() {
     Object.getOwnPropertyNames(this).forEach((key) => {
