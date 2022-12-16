@@ -191,7 +191,7 @@ export default class EmaTrend {
           }
         } else if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
           if (candle.emaTrendDirection === 'UP') {
-            pos = { side: 'SELL', entryPrice: candle.close };
+            pos = { side: 'BUY', entryPrice: candle.close };
           } else if (candle.emaTrendDirection === 'UPISH') {
             if (pos) {
               result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
