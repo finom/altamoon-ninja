@@ -182,6 +182,9 @@ export default class EmaTrend {
 
         if (prevCandle.emaTrendDirection === 'UP' || prevCandle.emaTrendDirection === 'UPISH') {
           if (candle.emaTrendDirection === 'DOWN') {
+            if (pos) {
+              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+            }
             pos = { side: 'SELL', entryPrice: candle.close };
           } else if (candle.emaTrendDirection === 'DOWNISH') {
             if (pos) {
@@ -191,6 +194,9 @@ export default class EmaTrend {
           }
         } else if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
           if (candle.emaTrendDirection === 'UP') {
+            if (pos) {
+              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+            }
             pos = { side: 'BUY', entryPrice: candle.close };
           } else if (candle.emaTrendDirection === 'UPISH') {
             if (pos) {
