@@ -159,7 +159,7 @@ export default class EmaTrend {
 
     this.backtestResult = null;
     const candles = await api.futuresCandles({
-      symbol, interval: actualInterval, limit: 1000,
+      symbol, interval: actualInterval, limit: 1500,
     });
     // eslint-disable-next-line no-console
     console.log('Ninja EMA Trend: Backtesting', symbol, interval);
@@ -173,7 +173,7 @@ export default class EmaTrend {
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
-    for (let i = Math.ceil(enhancedCandles.length / 2); i < enhancedCandles.length; i += 1) {
+    for (let i = 500; i < enhancedCandles.length; i += 1) {
       const candle = enhancedCandles[i];
       const prevCandle = enhancedCandles[i - 1];
 
