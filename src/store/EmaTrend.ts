@@ -24,6 +24,10 @@ export default class EmaTrend {
 
   #lastTickTime: Record<string, number> = {};
 
+  #collectedBackTest: Record<`${string}_${api.CandlestickChartInterval}`, number> = {};
+
+  public backtestStat = 0;
+
   constructor(store: EnhancedRootStore) {
     this.#store = store;
 
@@ -208,6 +212,11 @@ export default class EmaTrend {
       }
     }
 
+    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result;
+
+    const allResults =  Object.values(this.#collectedBackTest);
+    
+    this.backtestStat = (allResults.reduce((a, c) => a + c, 0) / allResults.length) * 100;
     this.backtestResult = result * 100;
   };
 

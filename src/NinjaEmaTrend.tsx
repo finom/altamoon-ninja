@@ -8,6 +8,7 @@ import { NINJA_EMA_TREND, NINJA_PERSISTENT } from './store';
 
 const NinjaEmaTrend = (): ReactElement => {
   const backtestResult = useValue(NINJA_EMA_TREND, 'backtestResult');
+  const backtestStat = useValue(NINJA_EMA_TREND, 'backtestStat');
   const [balanceRatioBidPercentStr, setBalanceRatioBidPercent] = useChange(NINJA_PERSISTENT, 'emaTrendBalanceRatioBidPercentStr');
   const items = useValue(NINJA_PERSISTENT, 'emaTrendItems');
   const createItem = useSilent(NINJA_EMA_TREND, 'createEmaTrendItem');
@@ -22,6 +23,12 @@ const NinjaEmaTrend = (): ReactElement => {
         {' '}
         {backtestResult && backtestResult > 0 ? '+' : ''}
         {backtestResult !== null ? `${backtestResult.toFixed(2)}%` : 'loading...'}
+      </p>
+      <p>
+        Collected stat:
+        {' '}
+        {backtestStat && backtestStat > 0 ? '+' : ''}
+        {`${backtestStat.toFixed(2)}%`}
       </p>
       <p>
         <label className="mb-1">Bid balance %</label>
