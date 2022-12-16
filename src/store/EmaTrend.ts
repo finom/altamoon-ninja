@@ -9,9 +9,9 @@ export interface EmaTrendDatum {
   balanceRatioBidPercent: number;
 }
 
-const EMA_1 = 9;
-const EMA_2 = 21;
-const EMA_3 = 55;
+const EMA_1 = 5; // 9;
+const EMA_2 = 8; // 21;
+const EMA_3 = 13; // 55;
 
 export default class EmaTrend {
   public strategySymbols: string[] = [];
