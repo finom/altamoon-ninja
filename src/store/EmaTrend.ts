@@ -1,7 +1,7 @@
 import * as api from 'altamoon-binance-api';
 import { listenChange } from 'use-change';
 
-type EnhancedCandle = api.FuturesChartCandle & { emaTrendDirection?: 'UP' | 'DOWN' | null };
+type EnhancedCandle = api.FuturesChartCandle & { emaTrendDirection?: 'UP' | 'DOWN' | 'UPISH' | 'DOWNISH' | null };
 
 export interface EmaTrendDatum {
   symbol: string;
@@ -87,7 +87,7 @@ export default class EmaTrend {
 
       const now = Date.now();
 
-      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 10_000) {
+      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 5_000) {
         this.#lastTickTime[symbol] = now;
         void this.#process(candle.symbol, [...data[candle.symbol]]);
       }
@@ -123,9 +123,7 @@ export default class EmaTrend {
         } else {
           await this.#store.trading.marketOrder({ side: 'BUY', quantity, symbol });
         }
-      }
-
-      if (directon === 'DOWN') {
+      } else if (directon === 'DOWN') {
         if (position) {
           if (position.side === 'BUY') {
             await this.#store.trading.closePosition(symbol);
@@ -133,6 +131,18 @@ export default class EmaTrend {
           }
         } else {
           await this.#store.trading.marketOrder({ side: 'SELL', quantity, symbol });
+        }
+      } else if (directon === 'UPISH') {
+        if (position) {
+          if (position.side === 'SELL') {
+            await this.#store.trading.closePosition(symbol);
+          }
+        }
+      } else if (directon === 'DOWNISH') {
+        if (position) {
+          if (position.side === 'BUY') {
+            await this.#store.trading.closePosition(symbol);
+          }
         }
       }
     }
@@ -167,15 +177,40 @@ export default class EmaTrend {
       const candle = enhancedCandles[i];
       const prevCandle = enhancedCandles[i - 1];
 
-      if (prevCandle.emaTrendDirection !== candle.emaTrendDirection) {
-        if (pos) {
-          const sideNum = pos.side === 'BUY' ? 1 : -1;
+      if (pos && prevCandle.emaTrendDirection !== candle.emaTrendDirection) {
+        const sideNum = pos.side === 'BUY' ? 1 : -1;
 
-          result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
-        }
+        if (candle.emaTrendDirection === 'UP') {
+          if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
+            result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+          }
 
-        pos = { side: candle.emaTrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
+          pos = { side: 'BUY', entryPrice: candle.close };
+        } else if (candle.emaTrendDirection === 'DOWN') {
+          if (prevCandle.emaTrendDirection === 'UP' || prevCandle.emaTrendDirection === 'UPISH') {
+            result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+          }
+
+          pos = {  side: 'SELL', entryPrice: candle.close };
+        } else if (candle.emaTrendDirection === 'UPISH') {
+          if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
+            pos = null;
+          } else {
+            pos = { side: 'BUY', entryPrice: candle.close };
+          }
+        } else if (candle.emaTrendDirection === 'DOWNISH') {
+          if (prevCandle.emaTrendDirection === 'UP' || prevCandle.emaTrendDirection === 'UPISH') {
+            pos = null;
+          } else {
+            pos = { side: 'SELL', entryPrice: candle.close };
+          }
+        } 
       }
+
+      // initial pos
+      pos = candle.emaTrendDirection === 'UP' || candle.emaTrendDirection === 'DOWN' ? pos ?? { 
+        side: candle.emaTrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close,
+      } : pos ?? null;
     }
 
     this.backtestResult = result * 100;
@@ -199,10 +234,14 @@ export default class EmaTrend {
 
       let emaTrendDirection: EnhancedCandle['emaTrendDirection'];
 
-      if(a < b && b < c) {
+      if (a < b && b < c) {
         emaTrendDirection = 'DOWN';
-      } else if(c < b && b < a) {
+      } else if (c < b && b < a) {
         emaTrendDirection = 'UP';
+      } else if (a < b) {
+        emaTrendDirection = 'DOWNISH'; 
+      } else if (b < a) {
+        emaTrendDirection = 'UPISH'; 
       } else {
         emaTrendDirection = result[i - 1]?.emaTrendDirection ?? null;
       }
@@ -224,7 +263,7 @@ export default class EmaTrend {
     for (let i = 0; i < candles.length; i += 1) {
       ema = candles[i].close * k + ema * (1 - k);
 
-      result.push(ema)
+      result.push(ema);
     }
 
     return result;

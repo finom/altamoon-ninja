@@ -44,7 +44,7 @@ export default class NinjaStore {
     this.againstBTC = new AgainstBTC(rootStore);
     this.tallCandles = new TallCandles(rootStore);
     this.supertrend = new Supertrend(rootStore);
-    this.emaTrend = new EmaTrend(rootStore)
+    this.emaTrend = new EmaTrend(rootStore);
 
     const {
       binanceApiKey, binanceApiSecret, testnetBinanceApiKey, testnetBinanceApiSecret, isTestnet,
