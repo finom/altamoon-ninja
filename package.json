@@ -10,7 +10,7 @@
     "lint": "npm run lint-pure -- --cache --fix",
     "test": "npm run lint-pure && npx tsc --noemit",
     "upgrade": "npx npm-check-updates -u && yarn",
-    "patch": "npm t && npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
+    "patch": "npm version patch && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
     "minor": "npm version minor && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags",
     "BREAKING-major": "npm t && npm version major && npm run build && (git commit -am 'chore: Build' || true) && npm publish && git push && git push --tags"
   },
