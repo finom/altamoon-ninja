@@ -9,9 +9,9 @@ export interface EmaTrendDatum {
   balanceRatioBidPercent: number;
 }
 
-const EMA_1 = 9; // 5;
-const EMA_2 = 21; // 8;
-const EMA_3 = 55; // 13;
+const EMA_1 = 5; // 9;
+const EMA_2 = 8; // 21;
+const EMA_3 = 13; // 55;
 
 export default class EmaTrend {
   public strategySymbols: string[] = [];
@@ -173,7 +173,7 @@ export default class EmaTrend {
   #backtest = (candles: api.FuturesChartCandle[]) => {
     const enhancedCandles = this.#calcTrend(candles);
 
-    const fee = 0.004;
+    const fee = 0.04 / 100;
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
