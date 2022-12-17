@@ -173,7 +173,7 @@ export default class EmaTrend {
   #backtest = (candles: api.FuturesChartCandle[]) => {
     const enhancedCandles = this.#calcTrend(candles);
 
-    const fee = 0.004 * 2;
+    const fee = 0.004;
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
@@ -183,28 +183,35 @@ export default class EmaTrend {
 
       if (prevCandle.emaTrendDirection !== candle.emaTrendDirection) {
         const sideNum = pos ? (pos?.side === 'BUY' ? 1 : -1) : 0;
+        const entryPrice = pos?.entryPrice ?? 0;
 
         if (prevCandle.emaTrendDirection === 'UP' || prevCandle.emaTrendDirection === 'UPISH') {
           if (candle.emaTrendDirection === 'DOWN') {
             if (pos) {
-              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+              result += (sideNum * (candle.close - entryPrice)) / candle.close;
+              result -= (candle.close - entryPrice) * fee;
             }
             pos = { side: 'SELL', entryPrice: candle.close };
+            result -= (candle.close - entryPrice) * fee;
           } else if (candle.emaTrendDirection === 'DOWNISH') {
             if (pos) {
-              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+              result += (sideNum * (candle.close - entryPrice)) / candle.close;
+              result -= (candle.close - entryPrice) * fee;
             }
             pos = null;
           }
         } else if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
           if (candle.emaTrendDirection === 'UP') {
             if (pos) {
-              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+              result += (sideNum * (candle.close - entryPrice)) / candle.close;
+              result -= (candle.close - entryPrice) * fee;
             }
             pos = { side: 'BUY', entryPrice: candle.close };
+            result -= (candle.close - entryPrice) * fee;
           } else if (candle.emaTrendDirection === 'UPISH') {
             if (pos) {
-              result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee)) / candle.close;
+              result += (sideNum * (candle.close - entryPrice)) / candle.close;
+              result -= (candle.close - entryPrice) * fee;
             }
             pos = null;
           }
