@@ -9,9 +9,9 @@ export interface EmaTrendDatum {
   balanceRatioBidPercent: number;
 }
 
-const EMA_1 = 9; // 5; // 9;
-const EMA_2 = 18; // 8; // 21;
-const EMA_3 = 36; // 13; // 55;
+const EMA_1 = 5; // 9;
+const EMA_2 = 8; // 21;
+const EMA_3 = 13; // 55;
 
 export default class EmaTrend {
   public strategySymbols: string[] = [];
@@ -198,7 +198,9 @@ export default class EmaTrend {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
               result -= fee;
             }
-            pos = null;
+            // pos = null;
+            pos = { side: 'SELL', entryPrice: candle.close };
+            result -= fee;
           }
         } else if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
           if (candle.emaTrendDirection === 'UP') {
@@ -213,7 +215,9 @@ export default class EmaTrend {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
               result -= fee;
             }
-            pos = null;
+            // pos = null;
+            pos = { side: 'BUY', entryPrice: candle.close };
+            result -= fee;
           }
         }
       }
