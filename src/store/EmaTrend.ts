@@ -18,7 +18,7 @@ export default class EmaTrend {
 
   #store: EnhancedRootStore;
 
-  public backtestResult: null | number = null;
+  public backtestResult: null | number = null; 
 
   #unsubscribe?: () => void;
 
@@ -189,14 +189,14 @@ export default class EmaTrend {
           if (candle.emaTrendDirection === 'DOWN') {
             if (pos) {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= (candle.close - entryPrice) * fee / candle.close;
+              result -= fee;
             }
             pos = { side: 'SELL', entryPrice: candle.close };
-            result -= (candle.close - entryPrice) * fee / candle.close;
+            result -= fee;
           } else if (candle.emaTrendDirection === 'DOWNISH') {
             if (pos) {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= (candle.close - entryPrice) * fee / candle.close;
+              result -= fee;
             }
             pos = null;
           }
@@ -204,14 +204,14 @@ export default class EmaTrend {
           if (candle.emaTrendDirection === 'UP') {
             if (pos) {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= (candle.close - entryPrice) * fee / candle.close;
+              result -= fee;
             }
             pos = { side: 'BUY', entryPrice: candle.close };
-            result -= (candle.close - entryPrice) * fee / candle.close;
+            result -= fee;
           } else if (candle.emaTrendDirection === 'UPISH') {
             if (pos) {
               result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= (candle.close - entryPrice) * fee / candle.close;
+              result -= fee;
             }
             pos = null;
           }
