@@ -10,8 +10,8 @@ export interface EmaTrendDatum {
 }
 
 const EMA_1 = 9; // 5; // 9;
-const EMA_2 = 21; // 8; // 21;
-const EMA_3 = 55; // 13; // 55;
+const EMA_2 = 18; // 8; // 21;
+const EMA_3 = 36; // 13; // 55;
 
 export default class EmaTrend {
   public strategySymbols: string[] = [];
