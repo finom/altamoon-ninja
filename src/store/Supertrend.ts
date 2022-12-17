@@ -9,6 +9,14 @@ export interface SupertrendDatum {
   balanceRatioBidPercent: number;
 }
 
+// Stats
+// ----
+// 1m - -3
+// 3m - 3
+// 5m - 5.42
+// 15m - -1.07
+// 30m - -0.72
+// ----
 export default class Supertrend {
   public strategySymbols: string[] = [];
 
