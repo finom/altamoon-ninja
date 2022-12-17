@@ -20,6 +20,10 @@ export default class Supertrend {
 
   #lastTickTime: Record<string, number> = {};
 
+  #collectedBackTest: Record<`${string}_${api.CandlestickChartInterval}`, number> = {};
+
+  public backtestStat = 0;
+
   constructor(store: EnhancedRootStore) {
     this.#store = store;
 
@@ -145,7 +149,7 @@ export default class Supertrend {
 
     this.backtestResult = null;
     const candles = await api.futuresCandles({
-      symbol, interval: actualInterval, limit: 1000,
+      symbol, interval: actualInterval, limit: 1500,
     });
 
     // eslint-disable-next-line no-console
@@ -158,7 +162,7 @@ export default class Supertrend {
 
     const enhancedCandles = this.#calcSupertrend(candles);
 
-    const fee = 0.004 * 2;
+    const fee = 0.04 / 100 * 2;
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
@@ -170,13 +174,19 @@ export default class Supertrend {
         if (pos) {
           const sideNum = pos.side === 'BUY' ? 1 : -1;
 
-          result += (sideNum * (candle.close - pos.entryPrice) * (1 - fee))
-            / candle.close;
+          result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
+          result -= fee;
         }
 
         pos = { side: candle.supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
       }
     }
+
+    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result;
+
+    const allResults =  Object.values(this.#collectedBackTest);
+    
+    this.backtestStat = (allResults.reduce((a, c) => a + c, 0) / allResults.length) * 100;
 
     this.backtestResult = result * 100;
   };

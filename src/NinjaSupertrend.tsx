@@ -8,6 +8,7 @@ import { NINJA_PERSISTENT, NINJA_SUPERTREND } from './store';
 
 const NinjaSupertrend = (): ReactElement => {
   const backtestResult = useValue(NINJA_SUPERTREND, 'backtestResult');
+  const backtestStat = useValue(NINJA_SUPERTREND, 'backtestStat');
   const [balanceRatioBidPercentStr, setBalanceRatioBidPercent] = useChange(NINJA_PERSISTENT, 'supertrendBalanceRatioBidPercentStr');
   const supertrendItems = useValue(NINJA_PERSISTENT, 'supertrendItems');
   const createSupertrendItem = useSilent(NINJA_SUPERTREND, 'createSupertrendItem');
@@ -22,6 +23,12 @@ const NinjaSupertrend = (): ReactElement => {
         {' '}
         {backtestResult && backtestResult > 0 ? '+' : ''}
         {backtestResult ? `${backtestResult.toFixed(2)}%` : 'loading...'}
+      </p>
+      <p>
+        Collected stat:
+        {' '}
+        {backtestStat && backtestStat > 0 ? '+' : ''}
+        {`${backtestStat.toFixed(2)}%`}
       </p>
       <p>
         <label className="mb-1">Bid balance %</label>
