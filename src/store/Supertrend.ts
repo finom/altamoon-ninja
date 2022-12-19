@@ -257,7 +257,7 @@ export default class Supertrend {
         supertrendDirection: isUpper ? 'DOWN' : 'UP',
       });
     }
-    console.log('SUPERTREND_CANDLES', result);
+
     return result;
   };
 }
