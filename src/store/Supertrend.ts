@@ -172,12 +172,13 @@ export default class Supertrend {
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
     for (let i = 1; i < enhancedCandles.length; i += 1) {
-      const candle = enhancedCandles[i - 1];
+      const prevCandle = enhancedCandles[i - 1];
+      const candle = enhancedCandles[i];
 
       if (pos) {
         const sideNum = pos.side === 'BUY' ? 1 : -1;
 
-        if (candle.supertrendDirection === 'UP') {
+        if (prevCandle.supertrendDirection === 'UP') {
           if (pos.side === 'SELL') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
             result -= fee;
@@ -185,7 +186,7 @@ export default class Supertrend {
           }
         }
 
-        if (candle.supertrendDirection === 'DOWN') {
+        if (prevCandle.supertrendDirection === 'DOWN') {
           if (pos.side === 'BUY') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
             result -= fee;
@@ -193,7 +194,7 @@ export default class Supertrend {
           }
         } 
       } else {
-        pos = { side: candle.supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
+        pos = { side: prevCandle.supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
       }
     }
 
