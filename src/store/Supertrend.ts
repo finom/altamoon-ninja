@@ -173,16 +173,26 @@ export default class Supertrend {
 
     for (let i = 1; i < enhancedCandles.length; i += 1) {
       const candle = enhancedCandles[i];
-      const prevCandle = enhancedCandles[i - 1];
 
-      if (prevCandle.supertrendDirection !== candle.supertrendDirection) {
-        if (pos) {
-          const sideNum = pos.side === 'BUY' ? 1 : -1;
+      if (pos) {
+        const sideNum = pos.side === 'BUY' ? 1 : -1;
 
-          result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
-          result -= fee;
+        if (candle.supertrendDirection === 'UP') {
+          if (pos.side === 'SELL') {
+            result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
+            result -= fee;
+            pos = { side: 'BUY', entryPrice: candle.close };
+          }
         }
 
+        if (candle.supertrendDirection === 'DOWN') {
+          if (pos.side === 'BUY') {
+            result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
+            result -= fee;
+            pos = { side: 'SELL', entryPrice: candle.close };
+          }
+        } 
+      } else {
         pos = { side: candle.supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
       }
     }
