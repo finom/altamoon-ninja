@@ -172,7 +172,7 @@ export default class Supertrend {
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
     for (let i = 1; i < enhancedCandles.length; i += 1) {
-      const candle = enhancedCandles[i];
+      const candle = enhancedCandles[i - 1];
 
       if (pos) {
         const sideNum = pos.side === 'BUY' ? 1 : -1;
