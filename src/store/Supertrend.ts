@@ -111,7 +111,7 @@ export default class Supertrend {
 
     if (!datum) return;
 
-    const supertrendDirecton = enhancedCandles[enhancedCandles.length - 1].supertrendDirection;
+    const supertrendDirecton = enhancedCandles[enhancedCandles.length - 2].supertrendDirection;
     const quantity = this.#store.trading.calculateQuantity({
       symbol,
       price: candles[candles.length - 1].close,
@@ -167,34 +167,36 @@ export default class Supertrend {
 
     const enhancedCandles = this.#calcSupertrend(candles);
 
-    const fee = 0.04 / 100 * 2;
+    const fee = 0.04 / 100;
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
     for (let i = 1; i < enhancedCandles.length; i += 1) {
       const prevCandle = enhancedCandles[i - 1];
+      const { supertrendDirection } = prevCandle;
       const candle = enhancedCandles[i];
 
       if (pos) {
         const sideNum = pos.side === 'BUY' ? 1 : -1;
 
-        if (prevCandle.supertrendDirection === 'UP') {
+        if (supertrendDirection === 'UP') {
           if (pos.side === 'SELL') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
-            result -= fee;
+            result -= fee * 2;
             pos = { side: 'BUY', entryPrice: candle.close };
           }
         }
 
-        if (prevCandle.supertrendDirection === 'DOWN') {
+        if (supertrendDirection === 'DOWN') {
           if (pos.side === 'BUY') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
-            result -= fee;
+            result -= fee * 2;
             pos = { side: 'SELL', entryPrice: candle.close };
           }
         } 
       } else {
-        pos = { side: prevCandle.supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
+        result -= fee;
+        pos = { side: supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
       }
     }
 
