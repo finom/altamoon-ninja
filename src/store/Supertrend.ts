@@ -171,10 +171,10 @@ export default class Supertrend {
     let result = 0;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
-    for (let i = 1; i < enhancedCandles.length; i += 1) {
-      const prevCandle = enhancedCandles[i - 1];
-      const { supertrendDirection } = prevCandle;
+    for (let i = 1; i < enhancedCandles.length - 1; i += 1) {
       const candle = enhancedCandles[i];
+
+      const { supertrendDirection } = candle;
 
       if (pos) {
         const sideNum = pos.side === 'BUY' ? 1 : -1;
@@ -198,6 +198,14 @@ export default class Supertrend {
         result -= fee;
         pos = { side: supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
       }
+    }
+
+    if (pos) { // last iteration, close the position
+      const sideNum = pos.side === 'BUY' ? 1 : -1;
+      const lastCandle = enhancedCandles[enhancedCandles.length - 1];
+      result += (sideNum * (lastCandle.close - pos.entryPrice)) / lastCandle.close;
+      result -= fee * 2;
+      pos = null;
     }
 
     this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result;
