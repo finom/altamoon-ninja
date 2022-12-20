@@ -95,7 +95,7 @@ export default class Supertrend {
 
       const now = Date.now();
 
-      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 10_000) {
+      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 20_000) {
         this.#lastTickTime[symbol] = now;
         void this.#process(candle.symbol, [...data[candle.symbol]]);
       }
