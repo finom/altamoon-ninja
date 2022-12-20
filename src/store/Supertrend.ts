@@ -32,6 +32,8 @@ export default class Supertrend {
 
   public backtestStat = 0;
 
+  #trendLastChanged: Record<`${string}_${api.CandlestickChartInterval}`, number> = {};
+
   constructor(store: EnhancedRootStore) {
     this.#store = store;
 
@@ -106,6 +108,8 @@ export default class Supertrend {
     const enhancedCandles = this.#calcSupertrend(candles);
     const { openPositions } = this.#store.trading;
     const position = openPositions.find((pos) => pos.symbol === symbol);
+    const interval = candles[0].interval;
+    const closeTime = candles[0].closeTime;
     const datum = this.#store.ninja.persistent.supertrendItems
       .find((item) => item.symbol === symbol);
 
@@ -120,14 +124,20 @@ export default class Supertrend {
         * (+this.#store.trading.allSymbolsPositionRisk[symbol]?.leverage || 1),
     });
 
+    if (this.#trendLastChanged[`${symbol}_${interval as api.CandlestickChartInterval}`] === closeTime) {
+      return;
+    }
+
     if (supertrendDirecton === 'UP') {
       if (position) {
         if (position.side === 'SELL') {
           await this.#store.trading.closePosition(symbol);
           await this.#store.trading.marketOrder({ side: 'BUY', quantity, symbol });
+          this.#trendLastChanged[`${symbol}_${interval as api.CandlestickChartInterval}`] = closeTime;
         }
       } else {
         await this.#store.trading.marketOrder({ side: 'BUY', quantity, symbol });
+        this.#trendLastChanged[`${symbol}_${interval as api.CandlestickChartInterval}`] = closeTime;
       }
     }
 
@@ -136,9 +146,11 @@ export default class Supertrend {
         if (position.side === 'BUY') {
           await this.#store.trading.closePosition(symbol);
           await this.#store.trading.marketOrder({ side: 'SELL', quantity, symbol });
+          this.#trendLastChanged[`${symbol}_${interval as api.CandlestickChartInterval}`] = closeTime;
         }
       } else {
         await this.#store.trading.marketOrder({ side: 'SELL', quantity, symbol });
+        this.#trendLastChanged[`${symbol}_${interval as api.CandlestickChartInterval}`] = closeTime;
       }
     }
   };
