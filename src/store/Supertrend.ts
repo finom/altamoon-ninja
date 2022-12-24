@@ -188,7 +188,7 @@ export default class Supertrend {
           if (pos.side === 'SELL') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
             result -= fee * 2;
-            pos = { side: 'BUY', entryPrice: candle.close };
+            pos = { side: 'BUY', entryPrice: candle.open };
           }
         }
 
@@ -196,7 +196,7 @@ export default class Supertrend {
           if (pos.side === 'BUY') {
             result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
             result -= fee * 2;
-            pos = { side: 'SELL', entryPrice: candle.close };
+            pos = { side: 'SELL', entryPrice: candle.open };
           }
         } 
       } else {
