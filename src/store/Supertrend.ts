@@ -9,14 +9,6 @@ export interface SupertrendDatum {
   balanceRatioBidPercent: number;
 }
 
-// Stats
-// ----
-// 1m - -3
-// 3m - 3
-// 5m - 5.42
-// 15m - -1.07
-// 30m - -0.72
-// ----
 export default class Supertrend {
   public strategySymbols: string[] = [];
 
@@ -185,8 +177,9 @@ export default class Supertrend {
 
     for (let i = 1; i < enhancedCandles.length - 1; i += 1) {
       const candle = enhancedCandles[i];
+      const prevCandle = enhancedCandles[i - 1];
 
-      const { supertrendDirection } = candle;
+      const { supertrendDirection } = prevCandle;
 
       if (pos) {
         const sideNum = pos.side === 'BUY' ? 1 : -1;
