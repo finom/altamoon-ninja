@@ -89,7 +89,7 @@ export default class Supertrend {
 
       const now = Date.now();
 
-      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 20_000) {
+      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 10_000) {
         this.#lastTickTime[symbol] = now;
         void this.#process(candle.symbol, [...data[candle.symbol]]);
       }
@@ -107,7 +107,7 @@ export default class Supertrend {
 
     if (!datum) return;
 
-    const supertrendDirecton = enhancedCandles[enhancedCandles.length - 2].supertrendDirection;
+    const { supertrendDirection } = enhancedCandles[enhancedCandles.length - 2];
     const quantity = this.#store.trading.calculateQuantity({
       symbol,
       price: candles[candles.length - 1].close,
@@ -120,7 +120,7 @@ export default class Supertrend {
       return;
     }
 
-    if (supertrendDirecton === 'UP') {
+    if (supertrendDirection === 'UP') {
       if (position) {
         if (position.side === 'SELL') {
           await this.#store.trading.closePosition(symbol);
@@ -133,7 +133,7 @@ export default class Supertrend {
       }
     }
 
-    if (supertrendDirecton === 'DOWN') {
+    if (supertrendDirection === 'DOWN') {
       if (position) {
         if (position.side === 'BUY') {
           await this.#store.trading.closePosition(symbol);
