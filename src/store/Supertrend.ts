@@ -206,7 +206,7 @@ export default class Supertrend {
       pos = null;
     }
 
-    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result;
+    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result - 1;
 
     const allResults =  Object.values(this.#collectedBackTest);
     
