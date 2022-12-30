@@ -18,8 +18,6 @@ export default class Supertrend {
 
   #unsubscribe?: () => void;
 
-  #lastTickTime: Record<string, number> = {};
-
   #collectedBackTest: Record<`${string}_${api.CandlestickChartInterval}`, number> = {};
 
   public backtestStat = 0;
@@ -85,12 +83,7 @@ export default class Supertrend {
         Object.assign(data[symbol][data[symbol].length - 1], candle);
       } else {
         data[symbol].push(candle);
-      }
 
-      const now = Date.now();
-
-      if (!this.#lastTickTime[symbol] || this.#lastTickTime[symbol] < now - 10_000) {
-        this.#lastTickTime[symbol] = now;
         void this.#process(candle.symbol, [...data[candle.symbol]]);
       }
     });
@@ -172,7 +165,7 @@ export default class Supertrend {
     const enhancedCandles = this.#calcSupertrend(candles);
 
     const fee = 0.04 / 100;
-    let result = 0;
+    let result = 1;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
     for (let i = 1; i < enhancedCandles.length - 1; i += 1) {
@@ -186,29 +179,29 @@ export default class Supertrend {
 
         if (supertrendDirection === 'UP') {
           if (pos.side === 'SELL') {
-            result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
-            result -= fee * 2;
+            result *= 1 + (sideNum * (candle.open - pos.entryPrice)) / candle.open;
+            result *= 1 - fee * 2;
             pos = { side: 'BUY', entryPrice: candle.open };
           }
         }
 
         if (supertrendDirection === 'DOWN') {
           if (pos.side === 'BUY') {
-            result += (sideNum * (candle.close - pos.entryPrice)) / candle.close;
-            result -= fee * 2;
+            result *= 1 + (sideNum * (candle.open - pos.entryPrice)) / candle.open;
+            result *= 1 - fee * 2;
             pos = { side: 'SELL', entryPrice: candle.open };
           }
         } 
       } else {
-        result -= fee;
-        pos = { side: supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.close };
+        result *= 1 - fee;
+        pos = { side: supertrendDirection === 'UP' ? 'BUY' : 'SELL', entryPrice: candle.open };
       }
     }
 
     if (pos) { // last iteration, close the position
       const sideNum = pos.side === 'BUY' ? 1 : -1;
       const lastCandle = enhancedCandles[enhancedCandles.length - 1];
-      result += (sideNum * (lastCandle.close - pos.entryPrice)) / lastCandle.close;
+      result += (sideNum * (lastCandle.open - pos.entryPrice)) / lastCandle.open;
       result -= fee * 2;
       pos = null;
     }
@@ -219,7 +212,7 @@ export default class Supertrend {
     
     this.backtestStat = (allResults.reduce((a, c) => a + c, 0) / allResults.length) * 100;
 
-    this.backtestResult = result * 100;
+    this.backtestResult = (result - 1) * 100;
   };
 
   #calcSupertrend = (
