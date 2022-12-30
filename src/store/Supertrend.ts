@@ -201,8 +201,8 @@ export default class Supertrend {
     if (pos) { // last iteration, close the position
       const sideNum = pos.side === 'BUY' ? 1 : -1;
       const lastCandle = enhancedCandles[enhancedCandles.length - 1];
-      result += (sideNum * (lastCandle.open - pos.entryPrice)) / lastCandle.open;
-      result -= fee * 2;
+      result *= 1 + (sideNum * (lastCandle.open - pos.entryPrice)) / lastCandle.open;
+      result *= 1 - fee * 2;
       pos = null;
     }
 
