@@ -174,7 +174,7 @@ export default class EmaTrend {
     const enhancedCandles = this.#calcTrend(candles);
 
     const fee = 0.04 / 100;
-    let result = 0;
+    let result = 1;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
     for (let i = 500; i < enhancedCandles.length; i += 1) {
@@ -188,30 +188,30 @@ export default class EmaTrend {
         if (prevCandle.emaTrendDirection === 'UP' || prevCandle.emaTrendDirection === 'UPISH') {
           if (candle.emaTrendDirection === 'DOWN') {
             if (pos) {
-              result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= fee;
+              result *= 1 + (sideNum * (candle.close - entryPrice)) / candle.close;
+              result *= 1 - fee;
             }
             pos = { side: 'SELL', entryPrice: candle.close };
             result -= fee;
           } else if (candle.emaTrendDirection === 'DOWNISH') {
             if (pos) {
-              result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= fee;
+              result *= 1 + (sideNum * (candle.close - entryPrice)) / candle.close;
+              result *= 1 - fee;
             }
             pos = null;
           }
         } else if (prevCandle.emaTrendDirection === 'DOWN' || prevCandle.emaTrendDirection === 'DOWNISH') {
           if (candle.emaTrendDirection === 'UP') {
             if (pos) {
-              result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= fee;
+              result *= 1 + (sideNum * (candle.close - entryPrice)) / candle.close;
+              result *= 1 - fee;
             }
             pos = { side: 'BUY', entryPrice: candle.close };
             result -= fee;
           } else if (candle.emaTrendDirection === 'UPISH') {
             if (pos) {
-              result += (sideNum * (candle.close - entryPrice)) / candle.close;
-              result -= fee;
+              result *= 1 + (sideNum * (candle.close - entryPrice)) / candle.close;
+              result *= 1 - fee;
             }
             pos = null;
           }
@@ -219,12 +219,12 @@ export default class EmaTrend {
       }
     }
 
-    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result;
+    this.#collectedBackTest[`${candles[0].symbol}_${candles[0].interval as api.CandlestickChartInterval}`] = result - 1;
 
     const allResults =  Object.values(this.#collectedBackTest);
     
     this.backtestStat = (allResults.reduce((a, c) => a + c, 0) / allResults.length) * 100;
-    this.backtestResult = result * 100;
+    this.backtestResult = (result - 1) * 100;
   };
 
   #calcTrend = (   
