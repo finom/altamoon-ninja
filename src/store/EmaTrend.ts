@@ -9,10 +9,11 @@ export interface EmaTrendDatum {
   balanceRatioBidPercent: number;
 }
 
+/*
 const EMA_1 = 9; // 5; // 9;
 const EMA_2 = 21; // 8; // 21;
 const EMA_3 = 55; // 13; // 55;
-
+*/
 export default class EmaTrend {
   public strategySymbols: string[] = [];
 
@@ -177,7 +178,7 @@ export default class EmaTrend {
     let result = 1;
     let pos: { side: api.OrderSide; entryPrice: number; } | null = null;
 
-    for (let i = 500; i < enhancedCandles.length; i += 1) {
+    for (let i = 100; i < enhancedCandles.length; i += 1) {
       const candle = enhancedCandles[i];
       const prevCandle = enhancedCandles[i - 1];
 
@@ -232,9 +233,9 @@ export default class EmaTrend {
   ) => {
 
     const result: EnhancedCandle[] = [];
-    const ema1 = this.#calcEma(candles, EMA_1);
-    const ema2 = this.#calcEma(candles, EMA_2);
-    const ema3 = this.#calcEma(candles, EMA_3);
+    const ema1 = this.#calcEma(candles, this.#store.persistent.chartEmaNumbers[0]);
+    const ema2 = this.#calcEma(candles, this.#store.persistent.chartEmaNumbers[1]);
+    const ema3 = this.#calcEma(candles, this.#store.persistent.chartEmaNumbers[2]);
 
     for (let i = 0; i < candles.length; i += 1) {
       const candle = candles[i];
