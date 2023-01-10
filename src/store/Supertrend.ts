@@ -216,8 +216,11 @@ export default class Supertrend {
   };
 
   #calcSupertrend = (
-    candles: api.FuturesChartCandle[], period = 10, multiplier = 3,
+    candles: api.FuturesChartCandle[], // , period = 10, multiplier = 3,
   ) => {
+    const period = this.#store.persistent.chartSupertrendPeroid;
+    const multiplier = this.#store.persistent.chartSupertrendMultiplier;
+
     let FINAL_UPPERBAND = 0;
     let FINAL_LOWERBAND = 0;
     let SUPERTREND = 0;
