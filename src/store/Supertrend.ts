@@ -150,7 +150,7 @@ export default class Supertrend {
     ] ?? interval as api.CandlestickChartInterval;
 
     this.backtestResult = null;
-    const candles = await api.futuresCandles({
+    const candles = await api.futuresKLines({
       symbol, interval: actualInterval, limit: 1500,
     });
 
