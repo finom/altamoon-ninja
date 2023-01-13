@@ -150,9 +150,22 @@ export default class Supertrend {
     ] ?? interval as api.CandlestickChartInterval;
 
     this.backtestResult = null;
-    const candles = await api.futuresKLines({
+    const firstCandles = await api.futuresKLines({
       symbol, interval: actualInterval, limit: 1500,
     });
+
+    const secondCandles = await api.futuresKLines({
+      symbol, interval: actualInterval, limit: 1500, endTime: firstCandles[0].time - 1,
+    });
+
+    const thirdCandles = await api.futuresKLines({
+      symbol, interval: actualInterval, limit: 1500, endTime: secondCandles[0].time - 1,
+    });
+
+    // console.log(firstCandles[0].time - secondCandles[secondCandles.length - 1].closeTime)
+    // console.log(secondCandles[0].time - thirdCandles[thirdCandles.length - 1].closeTime)
+
+    const candles = [...thirdCandles, ...secondCandles, ...firstCandles]
 
     // eslint-disable-next-line no-console
     console.log('Ninja Supertrend: Backtesting', symbol, interval);
