@@ -101,6 +101,12 @@ export default class Supertrend {
     if (!datum) return;
 
     const { supertrendDirection } = enhancedCandles[enhancedCandles.length - 2];
+    const { supertrendDirection: prevSupertrendDirection } = enhancedCandles[enhancedCandles.length - 3];
+    
+    if (this.#trendLastChanged[`${symbol}_${interval}`] === closeTime || prevSupertrendDirection === supertrendDirection) {
+      return;
+    }
+
     const quantity = this.#store.trading.calculateQuantity({
       symbol,
       price: candles[candles.length - 1].close,
@@ -108,10 +114,6 @@ export default class Supertrend {
         * this.#store.account.totalWalletBalance
         * (+this.#store.trading.allSymbolsPositionRisk[symbol]?.leverage || 1),
     });
-
-    if (this.#trendLastChanged[`${symbol}_${interval}`] === closeTime) {
-      return;
-    }
 
     if (supertrendDirection === 'UP') {
       if (position) {
@@ -165,7 +167,7 @@ export default class Supertrend {
     // console.log(firstCandles[0].time - secondCandles[secondCandles.length - 1].closeTime)
     // console.log(secondCandles[0].time - thirdCandles[thirdCandles.length - 1].closeTime)
 
-    const candles = [...thirdCandles, ...secondCandles, ...firstCandles]
+    const candles = [...thirdCandles, ...secondCandles, ...firstCandles];
 
     // eslint-disable-next-line no-console
     console.log('Ninja Supertrend: Backtesting', symbol, interval);
