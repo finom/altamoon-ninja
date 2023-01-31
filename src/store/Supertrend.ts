@@ -101,11 +101,12 @@ export default class Supertrend {
     if (!datum) return;
 
     const { supertrendDirection } = enhancedCandles[enhancedCandles.length - 2];
-    
+    const { supertrendDirection: supertrendDirectionPrev } = enhancedCandles[enhancedCandles.length - 3];
+
     if (
       this.#trendLastChanged[`${symbol}_${interval}`] === closeTime 
-      || supertrendDirection === 'DOWN' && position?.side === 'SELL'
-      || supertrendDirection === 'UP' && position?.side === 'BUY'
+      || supertrendDirection === 'DOWN' && (position?.side === 'SELL' || supertrendDirectionPrev === 'DOWN')
+      || supertrendDirection === 'UP' && (position?.side === 'BUY' || supertrendDirectionPrev === 'UP')
     ) {
       return;
     }
