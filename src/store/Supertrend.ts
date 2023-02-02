@@ -24,8 +24,6 @@ export default class Supertrend {
 
   #trendLastChanged: Record<`${string}_${api.CandlestickChartInterval}`, number> = {};
 
-  #lastPositionDirection: Record<string, api.OrderSide> = {};
-
   constructor(store: EnhancedRootStore) {
     this.#store = store;
 
@@ -38,7 +36,10 @@ export default class Supertrend {
 
     listenChange(store.trading, 'openPositions', (openPositions) => {
       for (const pos of openPositions) {
-        this.#lastPositionDirection[pos.symbol] = pos.side;
+        this.#store.ninja.persistent.superTrendLastPositionDirection = {
+          ...this.#store.ninja.persistent.superTrendLastPositionDirection,
+          [pos.symbol]: pos.side,
+        };
       }
     });
   }
@@ -112,8 +113,8 @@ export default class Supertrend {
 
     if (
       this.#trendLastChanged[`${symbol}_${interval}`] === closeTime 
-      || this.#lastPositionDirection[symbol] === 'BUY' && supertrendDirection === 'UP'
-      || this.#lastPositionDirection[symbol] === 'SELL' && supertrendDirection === 'DOWN'
+      || this.#store.ninja.persistent.superTrendLastPositionDirection[symbol] === 'BUY' && supertrendDirection === 'UP'
+      || this.#store.ninja.persistent.superTrendLastPositionDirection[symbol] === 'SELL' && supertrendDirection === 'DOWN'
     ) {
       return;
     }

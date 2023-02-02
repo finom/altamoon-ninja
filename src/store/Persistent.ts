@@ -38,6 +38,8 @@ export default class NinjaPersistent {
 
   public supertrendItems = persist<SupertrendDatum[]>('supertrendItems', []);
 
+  public superTrendLastPositionDirection = persist<Record<string, api.OrderSide>>('superTrendLastPositionDirection', {});
+
   public emaTrendItems = persist<EmaTrendDatum[]>('emaTrendItems', []);
 
   public supertrendBalanceRatioBidPercentStr = persist<string>('supertrendBalanceRatioBidPercentStr', '');
